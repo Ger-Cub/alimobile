@@ -34,8 +34,12 @@ export default function Overview() {
     const [isTestDialogOpen, setIsTestDialogOpen] = useState(false);
     const [testLoading, setTestLoading] = useState(false);
     const [testData, setTestData] = useState({
-        phone: "243",
-        name: "Gérard Test"
+        transactionId: "TX-TEST-001",
+        customerPhone: "243",
+        customerName: "Gérard Test",
+        platform: "WhatsApp",
+        decoderNumber: "12345678901",
+        status: "ACTIVATED"
     });
 
     const { data: stats, isLoading } = useQuery({
@@ -151,25 +155,68 @@ export default function Overview() {
                                     </DialogDescription>
                                 </DialogHeader>
                                 <div className="grid gap-4 py-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="txId">ID Transaction</Label>
+                                            <Input
+                                                id="txId"
+                                                value={testData.transactionId}
+                                                onChange={(e) => setTestData({ ...testData, transactionId: e.target.value })}
+                                                className="bg-white/5 border-white/10"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="phone">Téléphone</Label>
+                                            <Input
+                                                id="phone"
+                                                value={testData.customerPhone}
+                                                onChange={(e) => setTestData({ ...testData, customerPhone: e.target.value })}
+                                                placeholder="243XXXXXXXXX"
+                                                className="bg-white/5 border-white/10"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
                                     <div className="grid gap-2">
-                                        <Label htmlFor="phone">Numéro de téléphone</Label>
+                                        <Label htmlFor="name">Nom du Client</Label>
                                         <Input
-                                            id="phone"
-                                            value={testData.phone}
-                                            onChange={(e) => setTestData({ ...testData, phone: e.target.value })}
-                                            placeholder="243XXXXXXXXX"
-                                            className="bg-white/5 border-white/10 focus:border-green-500/50 focus:ring-green-500/20"
+                                            id="name"
+                                            value={testData.customerName}
+                                            onChange={(e) => setTestData({ ...testData, customerName: e.target.value })}
+                                            className="bg-white/5 border-white/10"
                                             required
                                         />
                                     </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="platform">Plateforme</Label>
+                                            <Input
+                                                id="platform"
+                                                value={testData.platform}
+                                                onChange={(e) => setTestData({ ...testData, platform: e.target.value })}
+                                                className="bg-white/5 border-white/10"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="decoder">N° Décodeur</Label>
+                                            <Input
+                                                id="decoder"
+                                                value={testData.decoderNumber}
+                                                onChange={(e) => setTestData({ ...testData, decoderNumber: e.target.value })}
+                                                className="bg-white/5 border-white/10"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
                                     <div className="grid gap-2">
-                                        <Label htmlFor="name">Nom</Label>
+                                        <Label htmlFor="status">Statut</Label>
                                         <Input
-                                            id="name"
-                                            value={testData.name}
-                                            onChange={(e) => setTestData({ ...testData, name: e.target.value })}
-                                            placeholder="Nom du client"
-                                            className="bg-white/5 border-white/10 focus:border-green-500/50 focus:ring-green-500/20"
+                                            id="status"
+                                            value={testData.status}
+                                            onChange={(e) => setTestData({ ...testData, status: e.target.value })}
+                                            className="bg-white/5 border-white/10"
                                             required
                                         />
                                     </div>

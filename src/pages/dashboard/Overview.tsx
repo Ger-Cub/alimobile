@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,16 +10,63 @@ import {
     Clock,
     TrendingUp,
     ArrowUpRight,
-    ArrowDownRight
+    MessageSquare,
+    Send
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 export default function Overview() {
+    const { toast } = useToast();
+    const [isTestDialogOpen, setIsTestDialogOpen] = useState(false);
+    const [testLoading, setTestLoading] = useState(false);
+    const [testData, setTestData] = useState({
+        phone: "243",
+        name: "Gérard Test"
+    });
+
     const { data: stats, isLoading } = useQuery({
         queryKey: ["stats"],
         queryFn: () => apiFetch("/admin/stats"),
         refetchInterval: 30000, // Refresh every 30s
     });
+
+    const handleTestWhatsApp = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setTestLoading(true);
+        try {
+            await apiFetch("/admin/test-whatsapp", {
+                method: "POST",
+                body: JSON.stringify(testData)
+            });
+            toast({
+                title: "Succès",
+                description: "La notification de test a été envoyée.",
+            });
+            setIsTestDialogOpen(false);
+        } catch (error: any) {
+            toast({
+                title: "Erreur",
+                description: error.message || "Échec de l'envoi de la notification.",
+                variant: "destructive"
+            });
+        } finally {
+            setTestLoading(false);
+        }
+    };
 
     const cards = [
         {
@@ -81,12 +129,65 @@ export default function Overview() {
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight mb-2">Bonjour, Gérard 👋</h1>
                     <p className="text-gray-400">Voici ce qui se passe sur AliMobile aujourd'hui.</p>
                 </div>
-                <div className="hidden sm:flex gap-3">
+                <div className="flex items-center gap-3">
+                    <Dialog open={isTestDialogOpen} onOpenChange={setIsTestDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button variant="outline" className="border-green-600/20 bg-green-600/5 hover:bg-green-600/10 text-green-500 gap-2">
+                                <MessageSquare className="w-4 h-4" />
+                                Test WhatsApp
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px] border-white/10">
+                            <form onSubmit={handleTestWhatsApp}>
+                                <DialogHeader>
+                                    <DialogTitle>Tester WhatsApp</DialogTitle>
+                                    <DialogDescription className="text-gray-400">
+                                        Envoyer une notification de test via n8n.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div className="grid gap-4 py-4">
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="phone">Numéro de téléphone</Label>
+                                        <Input
+                                            id="phone"
+                                            value={testData.phone}
+                                            onChange={(e) => setTestData({ ...testData, phone: e.target.value })}
+                                            placeholder="243XXXXXXXXX"
+                                            className="bg-white/5 border-white/10 focus:border-green-500/50 focus:ring-green-500/20"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="name">Nom</Label>
+                                        <Input
+                                            id="name"
+                                            value={testData.name}
+                                            onChange={(e) => setTestData({ ...testData, name: e.target.value })}
+                                            placeholder="Nom du client"
+                                            className="bg-white/5 border-white/10 focus:border-green-500/50 focus:ring-green-500/20"
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                                <DialogFooter>
+                                    <Button type="submit" disabled={testLoading} className="bg-green-600 hover:bg-green-700 text-white gap-2">
+                                        {testLoading ? "Envoi..." : (
+                                            <>
+                                                <Send className="w-4 h-4" />
+                                                Envoyer le test
+                                            </>
+                                        )}
+                                    </Button>
+                                </DialogFooter>
+                            </form>
+                        </DialogContent>
+                    </Dialog>
+
                     <Card className="bg-red-600/10 border-red-600/20 px-4 py-2 flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
                         <span className="text-xs font-semibold text-red-500 uppercase tracking-wider">Live System</span>
@@ -151,8 +252,4 @@ export default function Overview() {
             </div>
         </div>
     );
-}
-
-function cn(...inputs: any[]) {
-    return inputs.filter(Boolean).join(' ');
 }

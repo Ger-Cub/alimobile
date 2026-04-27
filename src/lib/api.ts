@@ -18,6 +18,7 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
     const config = {
         ...options,
         headers,
+        credentials: 'include' as RequestCredentials,
     };
 
     let response = await fetch(`${API_URL}${endpoint}`, config);
@@ -27,6 +28,7 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
         const refreshResponse = await fetch(`${API_URL}/auth/refresh-token`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include' as RequestCredentials,
             // The refresh token is in an HttpOnly cookie, so we need to include credentials
         });
 
@@ -36,7 +38,7 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
 
             // Retry original request
             headers.set('Authorization', `Bearer ${newAccessToken}`);
-            response = await fetch(`${API_URL}${endpoint}`, { ...options, headers });
+            response = await fetch(`${API_URL}${endpoint}`, { ...options, headers, credentials: 'include' as RequestCredentials });
         } else {
             // Refresh failed, logout
             localStorage.removeItem('accessToken');

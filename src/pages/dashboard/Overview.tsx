@@ -52,9 +52,19 @@ export default function Overview() {
         e.preventDefault();
         setTestLoading(true);
         try {
+            // Transformer les données pour correspondre à la structure attendue par l'API
+            const payload = {
+                transactionId: testData.transactionId,
+                phone: testData.customerPhone, // L'API demande 'phone' pas 'customerPhone'
+                name: testData.customerName,
+                platform: testData.platform,
+                decoderNumber: testData.decoderNumber,
+                status: testData.status
+            };
+            
             await apiFetch("/admin/test-whatsapp", {
                 method: "POST",
-                body: JSON.stringify(testData)
+                body: JSON.stringify(payload)
             });
             toast({
                 title: "Succès",

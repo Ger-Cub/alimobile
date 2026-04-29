@@ -10,8 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Lock, Mail, Loader2, ShieldCheck } from "lucide-react";
+import { Lock, Mail, Loader2, ShieldCheck, Eye, EyeOff } from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
 const loginSchema = z.object({
@@ -20,10 +21,18 @@ const loginSchema = z.object({
     rememberMe: z.boolean().default(false),
 });
 
+const forgotPasswordSchema = z.object({
+    email: z.string().email("Veuillez entrer une adresse email valide"),
+});
+
 type LoginFormValues = z.infer<typeof loginSchema>;
+type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>;
 
 export default function Login() {
     const [isLoading, setIsLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
+    const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
     const { login } = useAuth();
     const navigate = useNavigate();
 
@@ -33,6 +42,13 @@ export default function Login() {
             email: "",
             password: "",
             rememberMe: false,
+        },
+    });
+
+    const forgotPasswordForm = useForm<ForgotPasswordValues>({
+        resolver: zodResolver(forgotPasswordSchema),
+        defaultValues: {
+            email: "",
         },
     });
 
@@ -47,6 +63,24 @@ export default function Login() {
             console.error("Login error:", error);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const onForgotPasswordSubmit = async (data: ForgotPasswordValues) => {
+        setForgotPasswordLoading(true);
+        try {
+            // Simuler l'appel API pour réinitialiser le mot de passe
+            // À remplacer par un vrai appel API
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            toast.success("Lien de réinitialisation envoyé à " + data.email);
+            forgotPasswordForm.reset();
+            setForgotPasswordOpen(false);
+        } catch (error: any) {
+            toast.error(error.message || "Une erreur est survenue");
+            console.error("Forgot password error:", error);
+        } finally {
+            setForgotPasswordLoading(false);
         }
     };
 
@@ -107,19 +141,34 @@ export default function Login() {
                                         <FormItem className="space-y-1.5">
                                             <div className="flex items-center justify-between">
                                                 <FormLabel className="text-slate-200 font-medium">Mot de passe</FormLabel>
-                                                <a href="#" className="text-xs text-red-500 hover:text-red-400 font-medium transition-colors">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setForgotPasswordOpen(true)}
+                                                    className="text-xs text-red-500 hover:text-red-400 font-medium transition-colors"
+                                                >
                                                     Oublié ?
-                                                </a>
+                                                </button>
                                             </div>
                                             <FormControl>
                                                 <div className="relative group">
                                                     <Lock className="absolute left-3 top-3 h-4.5 w-4.5 text-slate-500 group-focus-within:text-red-500 transition-colors" />
                                                     <Input
-                                                        type="password"
+                                                        type={showPassword ? "text" : "password"}
                                                         placeholder="••••••••"
-                                                        className="pl-10 bg-slate-800/50 border-slate-700/50 focus:border-red-500 focus:ring-red-500/20 text-white placeholder:text-slate-600 h-11 transition-all hover:bg-slate-800/80"
+                                                        className="pl-10 pr-10 bg-slate-800/50 border-slate-700/50 focus:border-red-500 focus:ring-red-500/20 text-white placeholder:text-slate-600 h-11 transition-all hover:bg-slate-800/80"
                                                         {...field}
                                                     />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowPassword(!showPassword)}
+                                                        className="absolute right-3 top-3 text-slate-500 hover:text-slate-400 transition-colors group-focus-within:text-red-500"
+                                                    >
+                                                        {showPassword ? (
+                                                            <EyeOff className="h-4.5 w-4.5" />
+                                                        ) : (
+                                                            <Eye className="h-4.5 w-4.5" />
+                                                        )}
+                                                    </button>
                                                 </div>
                                             </FormControl>
                                             <FormMessage className="text-red-400" />
@@ -170,6 +219,69 @@ export default function Login() {
                     Propulsé par <span className="text-slate-300 font-semibold">AliMobile Dashboard</span>
                 </p>
             </div>
+
+            {/* Forgot Password Dialog */}
+            <Dialog open={forgotPasswordOpen} onOpenChange={setForgotPasswordOpen}>
+                <DialogContent className="border-white/10 bg-slate-900 text-white">
+                    <DialogHeader>
+                        <DialogTitle className="text-2xl font-bold">Réinitialiser le mot de passe</DialogTitle>
+                        <DialogDescription className="text-slate-400">
+                            Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <Form {...forgotPasswordForm}>
+                        <form onSubmit={forgotPasswordForm.handleSubmit(onForgotPasswordSubmit)} className="space-y-4">
+                            <FormField
+                                control={forgotPasswordForm.control}
+                                name="email"
+                                render={({ field }) => (
+                                    <FormItem className="space-y-1.5">
+                                        <FormLabel className="text-slate-200 font-medium">Adresse email</FormLabel>
+                                        <FormControl>
+                                            <div className="relative group">
+                                                <Mail className="absolute left-3 top-3 h-4.5 w-4.5 text-slate-500 group-focus-within:text-red-500 transition-colors" />
+                                                <Input
+                                                    placeholder="admin@alimobile.com"
+                                                    className="pl-10 bg-slate-800/50 border-slate-700/50 focus:border-red-500 focus:ring-red-500/20 text-white placeholder:text-slate-600 h-11 transition-all"
+                                                    {...field}
+                                                />
+                                            </div>
+                                        </FormControl>
+                                        <FormMessage className="text-red-400" />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <DialogFooter className="gap-2 pt-4">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setForgotPasswordOpen(false)}
+                                    className="border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
+                                    disabled={forgotPasswordLoading}
+                                >
+                                    Annuler
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    className="bg-red-600 hover:bg-red-700 text-white font-bold transition-all"
+                                    disabled={forgotPasswordLoading}
+                                >
+                                    {forgotPasswordLoading ? (
+                                        <div className="flex items-center justify-center">
+                                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                            Envoi...
+                                        </div>
+                                    ) : (
+                                        "Envoyer le lien"
+                                    )}
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    </Form>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

@@ -5,7 +5,7 @@ export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/ap
  * Custom fetch wrapper to handle auth and refresh tokens
  */
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
-    let accessToken = localStorage.getItem('accessToken');
+    const accessToken = localStorage.getItem('accessToken');
 
     const headers = new Headers(options.headers || {});
     if (accessToken) {
@@ -21,18 +21,31 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
         credentials: 'include' as RequestCredentials,
     };
 
-    let response = await fetch(`${API_URL}${endpoint}`, config);
+    let response;
+    try {
+        response = await fetch(`${API_URL}${endpoint}`, config);
+    } catch (err) {
+        console.error('API Fetch Error:', err);
+        throw new Error('Impossible de contacter le serveur. Vérifiez que le backend est lancé sur le port 5000.');
+    }
 
     // Handle 401 (Unauthorized) - attempt to refresh token
     if (response.status === 401 && !endpoint.includes('/auth/login')) {
-        const refreshResponse = await fetch(`${API_URL}/auth/refresh-token`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include' as RequestCredentials,
-            // The refresh token is in an HttpOnly cookie, so we need to include credentials
-        });
+        let refreshResponse;
+        try {
+            refreshResponse = await fetch(`${API_URL}/auth/refresh-token`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include' as RequestCredentials,
+            });
+        } catch (err) {
+            // If refresh fails due to network, just logout
+            localStorage.removeItem('accessToken');
+            window.location.href = '/dashboard/login';
+            return;
+        }
 
-        if (refreshResponse.ok) {
+        if (refreshResponse && refreshResponse.ok) {
             const { accessToken: newAccessToken } = await refreshResponse.json();
             localStorage.setItem('accessToken', newAccessToken);
 

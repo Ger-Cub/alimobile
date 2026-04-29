@@ -26,39 +26,87 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function Transactions() {
     const queryClient = useQueryClient();
 
-    const { data: transactions, isLoading } = useQuery({
+    const { data, isLoading, error, refetch } = useQuery({
         queryKey: ["transactions"],
         queryFn: () => apiFetch("/admin/transactions"),
     });
+
+    // Handle both array and object responses
+    const transactions = Array.isArray(data) ? data : (data?.transactions || []);
 
     const activateMutation = useMutation({
         mutationFn: (id: string) => apiFetch(`/admin/transactions/${id}/activate`, { method: "PATCH" }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["transactions"] });
             queryClient.invalidateQueries({ queryKey: ["stats"] });
-            toast.success("Transaction activée avec succès");
+            toast.success("Transaction activée et client notifié");
         },
         onError: (error: any) => {
             toast.error(error.message || "Erreur d'activation");
         }
     });
 
-    const getStatusBadge = (status: string) => {
+    const confirmTestMutation = useMutation({
+        mutationFn: (id: string) => apiFetch(`/admin/transactions/${id}/confirm-test`, { method: "PATCH" }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["transactions"] });
+            queryClient.invalidateQueries({ queryKey: ["stats"] });
+            toast.success("Paiement de test confirmé");
+        },
+        onError: (error: any) => {
+            toast.error(error.message || "Erreur de confirmation");
+        }
+    });
+
+    const getStatusBadge = (tx: any) => {
+        const status = tx.status || "PENDING";
+        const isTest = tx.isTest;
+
+        let badge;
         switch (status) {
             case "ACTIVATED":
-                return <Badge className="bg-green-500/10 text-green-500 border-green-500/20 hover:bg-green-500/20">Activé</Badge>;
+                badge = <Badge className="bg-green-500/10 text-green-500 border-green-500/20 hover:bg-green-500/20">Activé</Badge>;
+                break;
             case "PAID":
-                return <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/20 hover:bg-blue-500/20">Payé</Badge>;
+                badge = <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/20 hover:bg-blue-500/20">Payé</Badge>;
+                break;
+            case "PENDING":
+                badge = <Badge variant="outline" className="text-orange-400 border-orange-400/20">Attente</Badge>;
+                break;
+            case "FAILED":
+                badge = <Badge variant="outline" className="text-red-400 border-red-400/20">Échoué</Badge>;
+                break;
             default:
-                return <Badge variant="outline" className="text-gray-400 border-gray-400/20">Attente</Badge>;
+                badge = <Badge variant="outline" className="text-gray-400 border-gray-400/20">{status}</Badge>;
         }
+
+        if (isTest) {
+            return (
+                <div className="flex items-center gap-2">
+                    {badge}
+                    <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20 text-[10px] h-4 px-1">TEST</Badge>
+                </div>
+            );
+        }
+        return badge;
     };
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight mb-2">Transactions</h1>
-                <p className="text-gray-400">Gérez les abonnements et paiements entrants.</p>
+            <div className="flex justify-between items-start">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight mb-2">Transactions</h1>
+                    <p className="text-gray-400">Gérez les abonnements et paiements entrants.</p>
+                </div>
+                <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => refetch()} 
+                    className="bg-white/5 border-white/10"
+                    disabled={isLoading}
+                >
+                    Actualiser
+                </Button>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
@@ -104,48 +152,79 @@ export default function Transactions() {
                                     <TableCell className="text-right"><Skeleton className="h-8 w-24 ml-auto" /></TableCell>
                                 </TableRow>
                             ))
-                        ) : transactions?.length === 0 ? (
+                        ) : error ? (
+                            <TableRow>
+                                <TableCell colSpan={6} className="h-32 text-center text-red-400">
+                                    <div className="flex flex-col items-center gap-2">
+                                        <p>Erreur lors du chargement des transactions.</p>
+                                        <p className="text-sm opacity-70">{(error as Error).message}</p>
+                                        <Button size="sm" variant="outline" onClick={() => refetch()} className="mt-2 border-red-500/50 text-red-500 hover:bg-red-500/10">Réessayer</Button>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        ) : transactions.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={6} className="h-32 text-center text-gray-500">
                                     Aucune transaction trouvée.
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            transactions?.map((tx: any) => (
-                                <TableRow key={tx.id} className="hover:bg-white/5 border-white/5 transition-colors">
+                            transactions.map((tx: any) => (
+                                <TableRow key={tx.id || Math.random()} className="hover:bg-white/5 border-white/5 transition-colors">
                                     <TableCell>
                                         <div className="flex items-center gap-3">
                                             <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center overflow-hidden border border-white/10">
                                                 {tx.platform === 'WhatsApp' ? <MessageSquare className="w-4 h-4 text-green-500" /> : <Smartphone className="w-4 h-4 text-blue-500" />}
                                             </div>
                                             <div>
-                                                <p className="font-medium">{tx.customerPhone}</p>
-                                                <p className="text-xs text-gray-500">{tx.customerName || 'N/A'}</p>
+                                                <p className="font-medium">{tx.customerPhone || tx.phone || 'Inconnu'}</p>
+                                                <p className="text-xs text-gray-500">{tx.customerName || tx.name || 'N/A'}</p>
                                             </div>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="font-mono text-sm">{tx.decoderNumber}</TableCell>
-                                    <TableCell className="font-semibold">${tx.amount.toFixed(2)}</TableCell>
-                                    <TableCell>{getStatusBadge(tx.status)}</TableCell>
+                                    <TableCell className="font-mono text-sm">{tx.decoderNumber || 'N/A'}</TableCell>
+                                    <TableCell className="font-semibold">${(tx.amount || 0).toFixed(2)}</TableCell>
+                                    <TableCell>{getStatusBadge(tx)}</TableCell>
                                     <TableCell className="text-sm text-gray-400">
-                                        {new Date(tx.createdAt).toLocaleDateString('fr-FR')}
+                                        {tx.createdAt ? new Date(tx.createdAt).toLocaleDateString('fr-FR') : 'N/A'}
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        {tx.status === 'PAID' ? (
-                                            <Button
-                                                size="sm"
-                                                className="bg-green-600 hover:bg-green-700 text-white"
-                                                onClick={() => activateMutation.mutate(tx.id)}
-                                                disabled={activateMutation.isPending}
-                                            >
-                                                <CheckCheck className="w-4 h-4 mr-2" />
-                                                Activer
-                                            </Button>
-                                        ) : (
-                                            <Button size="sm" variant="ghost" className="text-gray-400">
-                                                <ExternalLink className="w-4 h-4" />
-                                            </Button>
-                                        )}
+                                        <div className="flex justify-end gap-2">
+                                            {tx.status === 'PENDING' && (
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    className="border-orange-500/50 text-orange-400 hover:bg-orange-500/10"
+                                                    onClick={() => {
+                                                        if (tx.isTest) {
+                                                            confirmTestMutation.mutate(tx.id);
+                                                        } else {
+                                                            activateMutation.mutate(tx.id);
+                                                        }
+                                                    }}
+                                                    disabled={activateMutation.isPending || confirmTestMutation.isPending}
+                                                >
+                                                    <CheckCheck className="w-4 h-4 mr-2" />
+                                                    {tx.isTest ? "Confirmer Test" : "Confirmer"}
+                                                </Button>
+                                            )}
+                                            {tx.status === 'PAID' && (
+                                                <Button
+                                                    size="sm"
+                                                    className="bg-green-600 hover:bg-green-700 text-white"
+                                                    onClick={() => activateMutation.mutate(tx.id)}
+                                                    disabled={activateMutation.isPending}
+                                                >
+                                                    <CheckCheck className="w-4 h-4 mr-2" />
+                                                    Confirmer
+                                                </Button>
+                                            )}
+                                            {tx.status !== 'PAID' && tx.status !== 'PENDING' && (
+                                                <Button size="sm" variant="ghost" className="text-gray-400">
+                                                    <ExternalLink className="w-4 h-4" />
+                                                </Button>
+                                            )}
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             ))

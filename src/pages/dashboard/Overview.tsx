@@ -11,7 +11,9 @@ import {
     TrendingUp,
     ArrowUpRight,
     MessageSquare,
-    Send
+    Send,
+    Plus,
+    CreditCard
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -29,10 +31,33 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
+import {
+    Area,
+    AreaChart,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis,
+    YAxis,
+    CartesianGrid
+} from "recharts";
+
+const chartData = [
+    { name: "Lun", total: 1200 },
+    { name: "Mar", total: 2100 },
+    { name: "Mer", total: 1800 },
+    { name: "Jeu", total: 2400 },
+    { name: "Ven", total: 3200 },
+    { name: "Sam", total: 2800 },
+    { name: "Dim", total: 3500 },
+];
+
 export default function Overview() {
     const { toast } = useToast();
     const [isTestDialogOpen, setIsTestDialogOpen] = useState(false);
+    const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
     const [testLoading, setTestLoading] = useState(false);
+    const [paymentLoading, setPaymentLoading] = useState(false);
+
     const [testData, setTestData] = useState({
         transactionId: "TX-TEST-001",
         customerPhone: "243",
@@ -42,11 +67,80 @@ export default function Overview() {
         status: "ACTIVATED"
     });
 
-    const { data: stats, isLoading } = useQuery({
+    const [paymentData, setPaymentData] = useState({
+        customerPhone: "243",
+        customerName: "",
+        platform: "Dashboard",
+        decoderNumber: "",
+        amount: 10,
+        isTest: false
+    });
+
+    const { data: stats, isLoading: isLoadingStats } = useQuery({
         queryKey: ["stats"],
         queryFn: () => apiFetch("/admin/stats"),
-        refetchInterval: 30000, // Refresh every 30s
+        refetchInterval: 30000,
     });
+
+    const { data: recentData, isLoading: isLoadingTransactions, error: transactionsError } = useQuery({
+        queryKey: ["recent-transactions"],
+        queryFn: () => apiFetch("/admin/transactions"),
+    });
+
+    const recentTransactions = Array.isArray(recentData) ? recentData : (recentData?.transactions || []);
+
+    const isLoading = isLoadingStats || isLoadingTransactions;
+
+    const handleInitiatePayment = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setPaymentLoading(true);
+        try {
+            const endpoint = paymentData.isTest ? "/payment/initiate-test" : "/payment/initiate";
+            const response = await apiFetch(endpoint, {
+                method: "POST",
+                body: JSON.stringify({
+                    customerPhone: paymentData.customerPhone,
+                    customerName: paymentData.customerName,
+                    platform: paymentData.platform,
+                    decoderNumber: paymentData.decoderNumber,
+                    amount: parseFloat(paymentData.amount.toString())
+                })
+            });
+
+            toast({
+                title: "Succès",
+                description: paymentData.isTest 
+                    ? "Paiement de test initié avec succès." 
+                    : `Paiement initié. URL SerdiPay: ${response.paymentUrl || 'N/A'}`,
+            });
+            
+            if (!paymentData.isTest && response.paymentUrl) {
+                window.open(response.paymentUrl, '_blank');
+            }
+            
+            setIsPaymentDialogOpen(false);
+            setPaymentData({
+                customerPhone: "243",
+                customerName: "",
+                platform: "Dashboard",
+                decoderNumber: "",
+                amount: 10,
+                isTest: false
+            });
+            // Invalider les requêtes pour rafraîchir la liste
+            queryClient.invalidateQueries({ queryKey: ["recent-transactions"] });
+            queryClient.invalidateQueries({ queryKey: ["transactions"] });
+            queryClient.invalidateQueries({ queryKey: ["stats"] });
+        } catch (error: any) {
+            toast({
+                title: "Erreur",
+                description: error.message || "Échec de l'initiation du paiement.",
+                variant: "destructive"
+            });
+        } finally {
+            setPaymentLoading(false);
+        }
+    };
 
     const handleTestWhatsApp = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -149,6 +243,96 @@ export default function Overview() {
                     <p className="text-gray-400">Voici ce qui se passe sur AliMobile aujourd'hui.</p>
                 </div>
                 <div className="flex items-center gap-3">
+                    <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button className="bg-red-600 hover:bg-red-700 text-white gap-2">
+                                <Plus className="w-4 h-4" />
+                                Nouveau Paiement
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px] border-white/10">
+                            <form onSubmit={handleInitiatePayment}>
+                                <DialogHeader>
+                                    <DialogTitle>Initier un Paiement</DialogTitle>
+                                    <DialogDescription className="text-gray-400">
+                                        Créer une nouvelle transaction (Live ou Test).
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div className="grid gap-4 py-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="payPhone">Téléphone Client</Label>
+                                            <Input
+                                                id="payPhone"
+                                                value={paymentData.customerPhone}
+                                                onChange={(e) => setPaymentData({ ...paymentData, customerPhone: e.target.value })}
+                                                placeholder="243XXXXXXXXX"
+                                                className="bg-white/5 border-white/10"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="payAmount">Montant ($)</Label>
+                                            <Input
+                                                id="payAmount"
+                                                type="number"
+                                                step="0.01"
+                                                value={paymentData.amount}
+                                                onChange={(e) => setPaymentData({ ...paymentData, amount: parseFloat(e.target.value) })}
+                                                className="bg-white/5 border-white/10"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="payName">Nom du Client</Label>
+                                        <Input
+                                            id="payName"
+                                            value={paymentData.customerName}
+                                            onChange={(e) => setPaymentData({ ...paymentData, customerName: e.target.value })}
+                                            placeholder="Ex: Jean Dupont"
+                                            className="bg-white/5 border-white/10"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="payDecoder">N° Décodeur</Label>
+                                        <Input
+                                            id="payDecoder"
+                                            value={paymentData.decoderNumber}
+                                            onChange={(e) => setPaymentData({ ...paymentData, decoderNumber: e.target.value })}
+                                            placeholder="Ex: 1234567890"
+                                            className="bg-white/5 border-white/10"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="flex items-center space-x-2 pt-2">
+                                        <input
+                                            type="checkbox"
+                                            id="isTest"
+                                            checked={paymentData.isTest}
+                                            onChange={(e) => setPaymentData({ ...paymentData, isTest: e.target.checked })}
+                                            className="w-4 h-4 rounded border-white/10 bg-white/5 text-red-600 focus:ring-red-600"
+                                        />
+                                        <Label htmlFor="isTest" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                            Mode TEST (Simuler sans frais)
+                                        </Label>
+                                    </div>
+                                </div>
+                                <DialogFooter>
+                                    <Button type="submit" disabled={paymentLoading} className="bg-red-600 hover:bg-red-700 text-white gap-2 w-full">
+                                        {paymentLoading ? "Traitement..." : (
+                                            <>
+                                                <CreditCard className="w-4 h-4" />
+                                                {paymentData.isTest ? "Initier Test" : "Initier Paiement Live"}
+                                            </>
+                                        )}
+                                    </Button>
+                                </DialogFooter>
+                            </form>
+                        </DialogContent>
+                    </Dialog>
+
                     <Dialog open={isTestDialogOpen} onOpenChange={setIsTestDialogOpen}>
                         <DialogTrigger asChild>
                             <Button variant="outline" className="border-green-600/20 bg-green-600/5 hover:bg-green-600/10 text-green-500 gap-2">
@@ -277,10 +461,49 @@ export default function Overview() {
                     <CardHeader>
                         <CardTitle>Performance Récente</CardTitle>
                     </CardHeader>
-                    <CardContent className="h-[300px] flex items-center justify-center border-t border-white/5">
-                        <div className="text-center">
-                            <p className="text-gray-500 text-sm italic">Graphique de progression (Prochain sprint)</p>
-                        </div>
+                    <CardContent className="h-[300px] border-t border-white/5 pt-6">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={chartData}>
+                                <defs>
+                                    <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
+                                <XAxis
+                                    dataKey="name"
+                                    stroke="#6b7280"
+                                    fontSize={12}
+                                    tickLine={false}
+                                    axisLine={false}
+                                />
+                                <YAxis
+                                    stroke="#6b7280"
+                                    fontSize={12}
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tickFormatter={(value) => `$${value}`}
+                                />
+                                <Tooltip
+                                    contentStyle={{
+                                        backgroundColor: "#1f2937",
+                                        border: "1px solid #374151",
+                                        borderRadius: "8px",
+                                        color: "#fff"
+                                    }}
+                                    itemStyle={{ color: "#ef4444" }}
+                                />
+                                <Area
+                                    type="monotone"
+                                    dataKey="total"
+                                    stroke="#ef4444"
+                                    strokeWidth={3}
+                                    fillOpacity={1}
+                                    fill="url(#colorTotal)"
+                                />
+                            </AreaChart>
+                        </ResponsiveContainer>
                     </CardContent>
                 </Card>
 
@@ -289,20 +512,34 @@ export default function Overview() {
                         <CardTitle>Activités Récentes</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                        <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">Aujourd'hui</p>
+                        <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">Dernières Transactions</p>
                         <div className="space-y-4">
-                            {[1, 2, 3].map(i => (
-                                <div key={i} className="flex gap-4 items-start">
-                                    <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center shrink-0">
-                                        <ArrowUpRight className="w-4 h-4 text-green-500" />
+                            {transactionsError ? (
+                                <p className="text-sm text-red-400 italic">Erreur: {(transactionsError as Error).message}</p>
+                            ) : !recentTransactions || recentTransactions.length === 0 ? (
+                                <p className="text-sm text-gray-500 italic">Aucune activité récente.</p>
+                            ) : (
+                                recentTransactions.slice(0, 5).map((tx: any) => (
+                                    <div key={tx.id || Math.random()} className="flex gap-4 items-start">
+                                        <div className={cn(
+                                            "w-8 h-8 rounded-full flex items-center justify-center shrink-0",
+                                            tx.status === 'PAID' || tx.status === 'ACTIVATED' ? "bg-green-500/10" : "bg-orange-500/10"
+                                        )}>
+                                            <ArrowUpRight className={cn(
+                                                "w-4 h-4",
+                                                tx.status === 'PAID' || tx.status === 'ACTIVATED' ? "text-green-500" : "text-orange-500"
+                                            )} />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm truncate font-medium">{tx.customerName || tx.name || tx.customerPhone || tx.phone || 'Inconnu'}</p>
+                                            <p className="text-xs text-gray-500">
+                                                {tx.status === 'ACTIVATED' ? 'Abonnement activé' : tx.status === 'PAID' ? 'Paiement reçu' : 'En attente'}
+                                            </p>
+                                        </div>
+                                        <div className="font-mono text-sm font-semibold">${(tx.amount || 0).toFixed(2)}</div>
                                     </div>
-                                    <div>
-                                        <p className="text-sm">Nouvelle commande payée</p>
-                                        <p className="text-xs text-gray-500">Il y a {i * 15} minutes</p>
-                                    </div>
-                                    <div className="ml-auto font-mono text-sm">+$24.00</div>
-                                </div>
-                            ))}
+                                ))
+                            )}
                         </div>
                     </CardContent>
                 </Card>

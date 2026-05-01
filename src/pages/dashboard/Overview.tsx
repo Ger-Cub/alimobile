@@ -70,7 +70,8 @@ export default function Overview() {
     const [paymentData, setPaymentData] = useState({
         customerPhone: "243",
         customerName: "",
-        platform: "Dashboard",
+        platform: "WhatsApp",
+        chatId: "",
         decoderNumber: "",
         amount: 10,
         isTest: false
@@ -102,6 +103,7 @@ export default function Overview() {
                     customerPhone: paymentData.customerPhone,
                     customerName: paymentData.customerName,
                     platform: paymentData.platform,
+                    chatId: paymentData.chatId,
                     decoderNumber: paymentData.decoderNumber,
                     amount: parseFloat(paymentData.amount.toString())
                 })
@@ -305,6 +307,31 @@ export default function Overview() {
                                             className="bg-white/5 border-white/10"
                                             required
                                         />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="payPlatform">Plateforme</Label>
+                                            <select
+                                                id="payPlatform"
+                                                value={paymentData.platform}
+                                                onChange={(e) => setPaymentData({ ...paymentData, platform: e.target.value })}
+                                                className="bg-[#1a1a1a] border border-white/10 text-sm rounded-md px-3 py-2 text-white outline-none focus:border-white/20"
+                                                required
+                                            >
+                                                <option value="WhatsApp">WhatsApp</option>
+                                                <option value="Telegram">Telegram</option>
+                                            </select>
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="payChatId">Chat ID (Telegram)</Label>
+                                            <Input
+                                                id="payChatId"
+                                                value={paymentData.chatId || ''}
+                                                onChange={(e) => setPaymentData({ ...paymentData, chatId: e.target.value })}
+                                                placeholder="Laisser vide si WhatsApp"
+                                                className="bg-white/5 border-white/10"
+                                            />
+                                        </div>
                                     </div>
                                     <div className="flex items-center space-x-2 pt-2">
                                         <input

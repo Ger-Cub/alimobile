@@ -14,6 +14,7 @@ import Login from "./pages/dashboard/Login";
 import DashboardLayout from "./components/dashboard/DashboardLayout";
 import Overview from "./pages/dashboard/Overview";
 import Transactions from "./pages/dashboard/Transactions";
+import Chatbot from "./components/shared/Chatbot";
 
 const queryClient = new QueryClient();
 
@@ -39,8 +40,8 @@ const App = () => (
           <TooltipProvider>
             <Toaster />
             <Sonner />
-            <BrowserRouter future={{ 
-              v7_startTransition: true, 
+            <BrowserRouter future={{
+              v7_startTransition: true,
               v7_relativeSplatPath: true,
               v7_fetcherPersist: true,
               v7_normalizeFormMethod: true,
@@ -66,6 +67,7 @@ const App = () => (
                 {/* Catch-all */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              <Chatbot />
             </BrowserRouter>
           </TooltipProvider>
         </AuthProvider>

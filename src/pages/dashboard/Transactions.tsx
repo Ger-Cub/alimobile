@@ -98,10 +98,10 @@ export default function Transactions() {
                     <h1 className="text-3xl font-bold tracking-tight mb-2">Transactions</h1>
                     <p className="text-gray-400">Gérez les abonnements et paiements entrants.</p>
                 </div>
-                <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => refetch()} 
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => refetch()}
                     className="bg-white/5 border-white/10"
                     disabled={isLoading}
                 >
@@ -133,7 +133,8 @@ export default function Transactions() {
                     <TableHeader className="bg-white/5">
                         <TableRow className="hover:bg-transparent border-white/5">
                             <TableHead className="text-gray-400">Client / Canal</TableHead>
-                            <TableHead className="text-gray-400">Décodeur</TableHead>
+                            <TableHead className="text-gray-400">Service</TableHead>
+                            <TableHead className="text-gray-400">Compte / Décodeur</TableHead>
                             <TableHead className="text-gray-400">Montant</TableHead>
                             <TableHead className="text-gray-400">Statut</TableHead>
                             <TableHead className="text-gray-400">Date</TableHead>
@@ -146,6 +147,7 @@ export default function Transactions() {
                                 <TableRow key={i} className="border-white/5">
                                     <TableCell><Skeleton className="h-6 w-32" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-24" /></TableCell>
+                                    <TableCell><Skeleton className="h-6 w-28" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-16" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-20" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-24" /></TableCell>
@@ -154,7 +156,7 @@ export default function Transactions() {
                             ))
                         ) : error ? (
                             <TableRow>
-                                <TableCell colSpan={6} className="h-32 text-center text-red-400">
+                                <TableCell colSpan={7} className="h-32 text-center text-red-400">
                                     <div className="flex flex-col items-center gap-2">
                                         <p>Erreur lors du chargement des transactions.</p>
                                         <p className="text-sm opacity-70">{(error as Error).message}</p>
@@ -164,7 +166,7 @@ export default function Transactions() {
                             </TableRow>
                         ) : transactions.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={6} className="h-32 text-center text-gray-500">
+                                <TableCell colSpan={7} className="h-32 text-center text-gray-500">
                                     Aucune transaction trouvée.
                                 </TableCell>
                             </TableRow>
@@ -180,6 +182,12 @@ export default function Transactions() {
                                                 <p className="font-medium">{tx.customerPhone || tx.phone || 'Inconnu'}</p>
                                                 <p className="text-xs text-gray-500">{tx.customerName || tx.name || 'N/A'}</p>
                                             </div>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex flex-col">
+                                            <p className="font-medium text-emerald-400">{tx.service || 'N/A'}</p>
+                                            <p className="text-xs text-gray-400">{tx.packageName || ''} {tx.country ? `(${tx.country})` : ''}</p>
                                         </div>
                                     </TableCell>
                                     <TableCell className="font-mono text-sm">{tx.decoderNumber || 'N/A'}</TableCell>

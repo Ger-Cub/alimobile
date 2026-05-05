@@ -205,6 +205,44 @@ export default function Chatbot() {
 
         if (action === "input_decoder") {
             ns.decoderNumber = value;
+            // For Voda-E, ask the amount before the operator
+            if (ns.service === "Voda-E") {
+                next = {
+                    role: "assistant",
+                    text: "Saisir le montant à recharger en USD 👇\n\n(Minimum : 5 USD)",
+                    isInput: true,
+                    inputType: "number",
+                    inputPlaceholder: "Montant en USD (ex: 10)",
+                    action: "input_amount",
+                };
+            } else {
+                next = {
+                    role: "assistant",
+                    text: "Choisissez un opérateur 👇",
+                    options: [
+                        { label: "M-Pesa / Vodacom", value: "MP" },
+                        { label: "Airtel Money", value: "AM" },
+                        { label: "Orange Money", value: "OM" },
+                        { label: "Africell", value: "AF" },
+                    ],
+                    action: "select_telecom",
+                };
+            }
+        } else if (action === "input_amount") {
+            const parsed = parseFloat(value);
+            if (isNaN(parsed) || parsed < 5) {
+                setTimeout(() => addMsg({
+                    role: "assistant",
+                    text: "Montant invalide. Le minimum est 5 USD. Veuillez réessayer.",
+                    isInput: true,
+                    inputType: "number",
+                    inputPlaceholder: "Montant en USD (min: 5)",
+                    action: "input_amount",
+                }), 400);
+                setState(ns);
+                return;
+            }
+            ns.amount = parsed;
             next = {
                 role: "assistant",
                 text: "Choisissez un opérateur 👇",
@@ -253,10 +291,15 @@ export default function Chatbot() {
             });
 
             const transactionId = res.transactionId;
-            addMsg({
-                role: "assistant",
-                text: "Transaction en cours... Autorisez le paiement sur votre mobile. Ce chatbot se mettra à jour automatiquement.",
-            });
+            // Stop spinner on "Initialisation..." message, then add the next message
+            setMessages((prev) => [
+                ...prev.map((m) => ({ ...m, isLoading: false })),
+                {
+                    id: Math.random().toString(36).slice(2),
+                    role: "assistant" as const,
+                    text: "Transaction en cours... Autorisez le paiement sur votre mobile. Ce chatbot se mettra à jour automatiquement.",
+                },
+            ]);
 
             let attempts = 0;
             const poll = setInterval(async () => {

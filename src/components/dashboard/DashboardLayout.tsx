@@ -10,7 +10,8 @@ import {
     Menu,
     X,
     User,
-    ChevronRight
+    ChevronRight,
+    FileText
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -28,6 +29,7 @@ export default function DashboardLayout() {
     const navItems = [
         { title: 'Vue d\'ensemble', icon: LayoutDashboard, href: '/dashboard' },
         { title: 'Transactions', icon: Receipt, href: '/dashboard/transactions' },
+        { title: 'Logs', icon: FileText, href: '/dashboard/logs' },
         { title: 'Paramètres', icon: Settings, href: '/dashboard/settings' },
     ];
 

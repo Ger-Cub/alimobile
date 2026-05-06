@@ -15,6 +15,7 @@ import DashboardLayout from "./components/dashboard/DashboardLayout";
 import Overview from "./pages/dashboard/Overview";
 import Transactions from "./pages/dashboard/Transactions";
 import Settings from "./pages/dashboard/Settings";
+import Logs from "./pages/dashboard/Logs";
 import Chatbot from "./components/shared/Chatbot";
 
 const queryClient = new QueryClient();
@@ -55,6 +56,7 @@ const App = () => (
                 }>
                   <Route index element={<Overview />} />
                   <Route path="transactions" element={<Transactions />} />
+                  <Route path="logs" element={<Logs />} />
                   <Route path="settings" element={<Settings />} />
                 </Route>
 

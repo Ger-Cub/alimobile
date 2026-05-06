@@ -1,6 +1,9 @@
 
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useMemo } from "react";
+import { format, subDays } from "date-fns";
+import { fr } from "date-fns/locale";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -41,22 +44,18 @@ import {
     CartesianGrid
 } from "recharts";
 
-const chartData = [
-    { name: "Lun", total: 1200 },
-    { name: "Mar", total: 2100 },
-    { name: "Mer", total: 1800 },
-    { name: "Jeu", total: 2400 },
-    { name: "Ven", total: 3200 },
-    { name: "Sam", total: 2800 },
-    { name: "Dim", total: 3500 },
-];
+// static chart removed, computed inside component
 
 export default function Overview() {
     const { toast } = useToast();
     const [isTestDialogOpen, setIsTestDialogOpen] = useState(false);
     const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+    const { user } = useAuth();
     const [testLoading, setTestLoading] = useState(false);
     const [paymentLoading, setPaymentLoading] = useState(false);
+
+    // Read default test status from localStorage (set in Settings)
+    const [isTestDefault] = useState(() => (localStorage.getItem("paymentEnv") || "test") === "test");
 
     const [testData, setTestData] = useState({
         transactionId: "TX-TEST-001",
@@ -74,7 +73,7 @@ export default function Overview() {
         chatId: "",
         decoderNumber: "",
         amount: 10,
-        isTest: false
+        isTest: isTestDefault
     });
 
     const { data: stats, isLoading: isLoadingStats } = useQuery({
@@ -90,7 +89,40 @@ export default function Overview() {
 
     const recentTransactions = Array.isArray(recentData) ? recentData : (recentData?.transactions || []);
 
+    const computedChartData = useMemo(() => {
+        // Last 7 days
+        const last7Days = Array.from({ length: 7 }).map((_, i) => {
+            const d = subDays(new Date(), 6 - i);
+            let dayName = format(d, "EEE", { locale: fr });
+            // Capitalize first letter (lun -> Lun)
+            dayName = dayName.charAt(0).toUpperCase() + dayName.slice(1);
+            return {
+                date: d,
+                name: dayName,
+                total: 0
+            };
+        });
+
+        recentTransactions.forEach((tx: any) => {
+            if (!tx.createdAt) return;
+            const txDate = new Date(tx.createdAt);
+            const day = last7Days.find(d =>
+                d.date.getDate() === txDate.getDate() &&
+                d.date.getMonth() === txDate.getMonth() &&
+                d.date.getFullYear() === txDate.getFullYear()
+            );
+            if (day) {
+                if (tx.status === "PAID" || tx.status === "ACTIVATED") {
+                    day.total += (tx.amount || 0);
+                }
+            }
+        });
+
+        return last7Days;
+    }, [recentTransactions]);
+
     const isLoading = isLoadingStats || isLoadingTransactions;
+    const queryClient = useQueryClient();
 
     const handleInitiatePayment = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -111,23 +143,24 @@ export default function Overview() {
 
             toast({
                 title: "Succès",
-                description: paymentData.isTest 
-                    ? "Paiement de test initié avec succès." 
+                description: paymentData.isTest
+                    ? "Paiement de test initié avec succès."
                     : `Paiement initié. URL SerdiPay: ${response.paymentUrl || 'N/A'}`,
             });
-            
+
             if (!paymentData.isTest && response.paymentUrl) {
                 window.open(response.paymentUrl, '_blank');
             }
-            
+
             setIsPaymentDialogOpen(false);
             setPaymentData({
                 customerPhone: "243",
                 customerName: "",
                 platform: "Dashboard",
+                chatId: "",
                 decoderNumber: "",
                 amount: 10,
-                isTest: false
+                isTest: isTestDefault
             });
             // Invalider les requêtes pour rafraîchir la liste
             queryClient.invalidateQueries({ queryKey: ["recent-transactions"] });
@@ -157,7 +190,7 @@ export default function Overview() {
                 decoderNumber: testData.decoderNumber,
                 status: testData.status
             };
-            
+
             await apiFetch("/admin/test-whatsapp", {
                 method: "POST",
                 body: JSON.stringify(payload)
@@ -217,7 +250,7 @@ export default function Overview() {
         return (
             <div className="space-y-8 animate-in fade-in duration-500">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight mb-2">Bonjour, Gérard 👋</h1>
+                    <h1 className="text-3xl font-bold tracking-tight mb-2">Bonjour, {user?.email?.split('@')[0] || "Admin"} 👋</h1>
                     <p className="text-gray-400">Voici ce qui se passe sur AliMobile aujourd'hui.</p>
                 </div>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -241,7 +274,7 @@ export default function Overview() {
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight mb-2">Bonjour, Gérard 👋</h1>
+                    <h1 className="text-3xl font-bold tracking-tight mb-2">Bonjour, {user?.email?.split('@')[0] || "Admin"} 👋</h1>
                     <p className="text-gray-400">Voici ce qui se passe sur AliMobile aujourd'hui.</p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -490,7 +523,7 @@ export default function Overview() {
                     </CardHeader>
                     <CardContent className="h-[300px] border-t border-white/5 pt-6">
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={chartData}>
+                            <AreaChart data={computedChartData}>
                                 <defs>
                                     <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />

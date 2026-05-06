@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { X, Send, ChevronDown, CheckCircle2, Loader2, Bot } from "lucide-react";
+import { X, Send, ChevronDown, CheckCircle2, Loader2, Bot, Maximize2, Minimize2 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
@@ -60,6 +60,7 @@ const INITIAL_MSG: Message = {
 
 export default function Chatbot() {
     const [isOpen, setIsOpen] = useState(false);
+    const [isFullscreen, setIsFullscreen] = useState(false);
     const [messages, setMessages] = useState<Message[]>([INITIAL_MSG]);
     const [inputValue, setInputValue] = useState("");
     const [state, setState] = useState({
@@ -274,7 +275,10 @@ export default function Chatbot() {
     const doPayment = async (cs: typeof state) => {
         addMsg({ role: "assistant", text: "Initialisation du paiement...", isLoading: true });
         try {
-            const res = await apiFetch("/payment/initiate-test", {
+            const paymentEnv = localStorage.getItem("paymentEnv") || "test";
+            const endpoint = paymentEnv === "live" ? "/payment/initiate" : "/payment/initiate-test";
+
+            const res = await apiFetch(endpoint, {
                 method: "POST",
                 body: JSON.stringify({
                     customerPhone: cs.customerPhone,
@@ -361,7 +365,12 @@ export default function Chatbot() {
     }
 
     return (
-        <div className="fixed bottom-6 right-6 w-[340px] max-w-[calc(100vw-24px)] bg-background text-foreground border border-border shadow-2xl rounded-2xl overflow-hidden flex flex-col z-[100] h-[540px] animate-in slide-in-from-bottom-4 fade-in duration-300">
+        <div className={cn(
+            "fixed bg-background text-foreground border border-border shadow-2xl overflow-hidden flex flex-col z-[100] animate-in slide-in-from-bottom-4 fade-in duration-300 transition-all",
+            isFullscreen
+                ? "inset-0 w-full h-full rounded-none"
+                : "bottom-0 right-0 w-full h-[600px] sm:bottom-6 sm:right-6 sm:w-[340px] sm:max-w-[calc(100vw-24px)] md:h-[540px] sm:rounded-2xl"
+        )}>
             {/* Header */}
             <div className="relative flex items-center gap-3 p-4 border-b border-border bg-card">
                 <div className="absolute top-0 left-0 w-full h-[3px] bg-red-600" />
@@ -377,13 +386,22 @@ export default function Chatbot() {
                 </div>
                 <button
                     onClick={() => setMessages([INITIAL_MSG])}
-                    className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground"
+                    className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground mr-1"
+                    title="Réinitialiser"
                 >
                     <ChevronDown className="w-4 h-4" />
                 </button>
                 <button
+                    onClick={() => setIsFullscreen(!isFullscreen)}
+                    className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hidden sm:block mr-1"
+                    title={isFullscreen ? "Réduire" : "Plein écran"}
+                >
+                    {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                </button>
+                <button
                     onClick={() => setIsOpen(false)}
                     className="p-1.5 rounded-lg hover:bg-red-500/10 hover:text-red-500 transition-colors text-muted-foreground"
+                    title="Fermer"
                 >
                     <X className="w-4 h-4" />
                 </button>

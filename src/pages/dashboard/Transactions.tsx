@@ -128,7 +128,7 @@ export default function Transactions() {
                 </div>
             </div>
 
-            <div className="rounded-xl border border-white/5 bg-white/5 overflow-hidden">
+            <div className="rounded-xl border border-white/5 bg-white/5 overflow-x-auto">
                 <Table>
                     <TableHeader className="bg-white/5">
                         <TableRow className="hover:bg-transparent border-white/5">

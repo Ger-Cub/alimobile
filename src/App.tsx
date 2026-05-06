@@ -14,6 +14,7 @@ import Login from "./pages/dashboard/Login";
 import DashboardLayout from "./components/dashboard/DashboardLayout";
 import Overview from "./pages/dashboard/Overview";
 import Transactions from "./pages/dashboard/Transactions";
+import Settings from "./pages/dashboard/Settings";
 import Chatbot from "./components/shared/Chatbot";
 
 const queryClient = new QueryClient();
@@ -40,14 +41,7 @@ const App = () => (
           <TooltipProvider>
             <Toaster />
             <Sonner />
-            <BrowserRouter future={{
-              v7_startTransition: true,
-              v7_relativeSplatPath: true,
-              v7_fetcherPersist: true,
-              v7_normalizeFormMethod: true,
-              v7_partialHydration: true,
-              v7_skipActionErrorRevalidation: true
-            }}>
+            <BrowserRouter>
               <Routes>
                 {/* Public Routes */}
                 <Route path="/" element={<Index />} />
@@ -61,7 +55,7 @@ const App = () => (
                 }>
                   <Route index element={<Overview />} />
                   <Route path="transactions" element={<Transactions />} />
-                  <Route path="settings" element={<div className="p-10 text-center text-gray-500">Paramètres (Prochainement)</div>} />
+                  <Route path="settings" element={<Settings />} />
                 </Route>
 
                 {/* Catch-all */}

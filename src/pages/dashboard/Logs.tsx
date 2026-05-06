@@ -4,7 +4,9 @@ import { apiFetch } from "@/lib/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, ServerCrash, AlertCircle, Info } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Loader2, ServerCrash, AlertCircle, Info, Eye } from "lucide-react";
 
 export default function Logs() {
     const [logs, setLogs] = useState<any[]>([]);
@@ -48,23 +50,24 @@ export default function Logs() {
                 </p>
             </div>
 
-            <Card>
+            <Card className="bg-[#0c0c0e] border-white/5 shadow-2xl">
                 <CardHeader>
-                    <CardTitle>Journaux d'événements</CardTitle>
-                    <CardDescription>
+                    <CardTitle className="text-white">Journaux d'événements</CardTitle>
+                    <CardDescription className="text-gray-400">
                         Dernières erreurs capturées par le backend.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="rounded-md border">
+                    <div className="rounded-md border border-white/5 bg-[#0c0c0e]">
                         <Table>
                             <TableHeader>
-                                <TableRow>
-                                    <TableHead>Date</TableHead>
-                                    <TableHead>Niveau</TableHead>
-                                    <TableHead>Source</TableHead>
-                                    <TableHead>Message</TableHead>
-                                    <TableHead>ID Transaction</TableHead>
+                                <TableRow className="border-white/5 hover:bg-white/5">
+                                    <TableHead className="text-gray-400">Date</TableHead>
+                                    <TableHead className="text-gray-400">Niveau</TableHead>
+                                    <TableHead className="text-gray-400">Source</TableHead>
+                                    <TableHead className="text-gray-400">Message</TableHead>
+                                    <TableHead className="text-gray-400">ID Transaction</TableHead>
+                                    <TableHead className="text-gray-400 text-right">Action</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -84,17 +87,40 @@ export default function Logs() {
                                     </TableRow>
                                 ) : (
                                     logs.map((log) => (
-                                        <TableRow key={log.id}>
-                                            <TableCell className="text-xs whitespace-nowrap">
+                                        <TableRow key={log.id} className="border-white/5 hover:bg-white/5">
+                                            <TableCell className="text-xs whitespace-nowrap text-gray-300">
                                                 {format(new Date(log.createdAt), "dd/MM/yyyy HH:mm:ss")}
                                             </TableCell>
                                             <TableCell>{getLevelBadge(log.level)}</TableCell>
-                                            <TableCell className="font-mono text-xs">{log.source}</TableCell>
-                                            <TableCell className="max-w-md truncate" title={log.message}>
+                                            <TableCell className="font-mono text-xs text-gray-300">{log.source}</TableCell>
+                                            <TableCell className="max-w-md truncate text-gray-300" title={log.message}>
                                                 {log.message}
                                             </TableCell>
-                                            <TableCell className="font-mono text-xs text-muted-foreground">
+                                            <TableCell className="font-mono text-xs text-gray-500">
                                                 {log.transactionId || "N/A"}
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                {log.details ? (
+                                                    <Dialog>
+                                                        <DialogTrigger asChild>
+                                                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-white/10">
+                                                                <Eye className="h-4 w-4" />
+                                                            </Button>
+                                                        </DialogTrigger>
+                                                        <DialogContent className="bg-[#0c0c0e] border-white/10 text-white sm:max-w-2xl">
+                                                            <DialogHeader>
+                                                                <DialogTitle>Détails de l'erreur</DialogTitle>
+                                                            </DialogHeader>
+                                                            <div className="mt-4 p-4 rounded-xl bg-black border border-white/5 overflow-auto max-h-[60vh] custom-scrollbar">
+                                                                <pre className="text-xs font-mono text-red-400">
+                                                                    {JSON.stringify(log.details, null, 2)}
+                                                                </pre>
+                                                            </div>
+                                                        </DialogContent>
+                                                    </Dialog>
+                                                ) : (
+                                                    <span className="text-xs text-muted-foreground">-</span>
+                                                )}
                                             </TableCell>
                                         </TableRow>
                                     ))

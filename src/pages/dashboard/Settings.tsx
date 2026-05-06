@@ -122,23 +122,23 @@ export default function Settings() {
 
                 {/* PROFIL Administrateur */}
                 <TabsContent value="profile" className="space-y-4">
-                    <Card>
+                    <Card className="bg-[#0c0c0e] border-white/5 shadow-xl">
                         <CardHeader>
-                            <CardTitle>Profil Administrateur</CardTitle>
-                            <CardDescription>
+                            <CardTitle className="text-white">Profil Administrateur</CardTitle>
+                            <CardDescription className="text-gray-400">
                                 Mettez à jour vos informations personnelles.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-4">
+                        <CardContent className="space-y-4 text-white">
                             <div className="space-y-2">
-                                <Label htmlFor="name">Nom complet</Label>
-                                <Input id="name" defaultValue="Gérard" />
+                                <Label htmlFor="name" className="text-gray-300">Nom complet</Label>
+                                <Input id="name" defaultValue="Gérard" className="bg-black border-white/10 focus-visible:ring-red-600" />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="email">Email</Label>
-                                <Input id="email" defaultValue="admin@alimobile.com" />
+                                <Label htmlFor="email" className="text-gray-300">Email</Label>
+                                <Input id="email" defaultValue="admin@alimobile.com" className="bg-black border-white/10 focus-visible:ring-red-600" />
                             </div>
-                            <Button>
+                            <Button className="bg-red-600 hover:bg-red-700 text-white">
                                 <Save className="w-4 h-4 mr-2" />
                                 Enregistrer
                             </Button>
@@ -148,18 +148,18 @@ export default function Settings() {
 
                 {/* APPARENCE ET LANGUE */}
                 <TabsContent value="appearance" className="space-y-4">
-                    <Card>
+                    <Card className="bg-[#0c0c0e] border-white/5 shadow-xl">
                         <CardHeader>
-                            <CardTitle>Apparence & Langues</CardTitle>
-                            <CardDescription>
+                            <CardTitle className="text-white">Apparence & Langues</CardTitle>
+                            <CardDescription className="text-gray-400">
                                 Personnalisez le thème de l'application et la langue par défaut.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="flex items-center justify-between border-b border-border pb-6">
+                        <CardContent className="space-y-6 text-white">
+                            <div className="flex items-center justify-between border-b border-white/5 pb-6">
                                 <div className="space-y-1">
-                                    <h4 className="text-sm font-medium leading-none">Thème Sombre</h4>
-                                    <p className="text-sm text-muted-foreground">
+                                    <h4 className="text-sm font-medium leading-none text-gray-200">Thème Sombre</h4>
+                                    <p className="text-sm text-gray-400">
                                         Basculer entre le mode clair et sombre.
                                     </p>
                                 </div>
@@ -171,22 +171,22 @@ export default function Settings() {
 
                             <div className="space-y-4 pt-2">
                                 <div className="space-y-2">
-                                    <Label htmlFor="language">Langue de l'application</Label>
+                                    <Label htmlFor="language" className="text-gray-300">Langue de l'application</Label>
                                     <Select value={language} onValueChange={setLanguage}>
-                                        <SelectTrigger id="language">
+                                        <SelectTrigger id="language" className="bg-black border-white/10 text-white">
                                             <div className="flex items-center">
-                                                <Globe className="w-4 h-4 mr-2" />
+                                                <Globe className="w-4 h-4 mr-2 text-gray-400" />
                                                 <SelectValue placeholder="Sélectionnez une langue" />
                                             </div>
                                         </SelectTrigger>
-                                        <SelectContent>
+                                        <SelectContent className="bg-[#0c0c0e] border-white/10 text-white">
                                             <SelectItem value="fr">Français</SelectItem>
                                             <SelectItem value="en">English</SelectItem>
                                             <SelectItem value="es">Español</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <Button onClick={handleSaveLangue} variant="secondary">
+                                <Button onClick={handleSaveLangue} variant="secondary" className="bg-white/10 text-white hover:bg-white/20 border-0">
                                     <Save className="w-4 h-4 mr-2" />
                                     Enregistrer la langue
                                 </Button>
@@ -197,27 +197,27 @@ export default function Settings() {
 
                 {/* PAIEMENTS URL */}
                 <TabsContent value="payments" className="space-y-4">
-                    <Card>
+                    <Card className="bg-[#0c0c0e] border-white/5 shadow-xl">
                         <CardHeader>
-                            <CardTitle>Configuration des Paiements (API)</CardTitle>
-                            <CardDescription>
+                            <CardTitle className="text-white">Configuration des Paiements (API)</CardTitle>
+                            <CardDescription className="text-gray-400">
                                 Gérez les URLs d'API pour les paiements réels (SerdiPay) et Test. Le chatbot utilise l'environnement actif.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-6">
+                        <CardContent className="space-y-6 text-white">
                             <div className="space-y-4">
-                                <div className="flex items-center justify-between border p-4 rounded-lg bg-muted/50">
+                                <div className="flex items-center justify-between border border-white/5 p-4 rounded-lg bg-black">
                                     <div className="space-y-1">
-                                        <h4 className="text-sm font-medium leading-none">Environnement Actif</h4>
-                                        <p className="text-sm text-muted-foreground">
+                                        <h4 className="text-sm font-medium leading-none text-gray-200">Environnement Actif</h4>
+                                        <p className="text-sm text-gray-400">
                                             Choisissez quel environnement (Test ou Live) est utilisé par défaut.
                                         </p>
                                     </div>
                                     <Select value={paymentEnv} onValueChange={handleEnvChange}>
-                                        <SelectTrigger className="w-[180px]">
+                                        <SelectTrigger className="w-[180px] bg-[#0c0c0e] border-white/10 text-white">
                                             <SelectValue placeholder="Environnement" />
                                         </SelectTrigger>
-                                        <SelectContent>
+                                        <SelectContent className="bg-[#0c0c0e] border-white/10 text-white">
                                             <SelectItem value="test">Test (Sandbox)</SelectItem>
                                             <SelectItem value="live">Live (Production)</SelectItem>
                                         </SelectContent>
@@ -230,60 +230,63 @@ export default function Settings() {
 
                 {/* ADMINISTRATEURS */}
                 <TabsContent value="admins" className="space-y-4">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between">
+                    <Card className="bg-[#0c0c0e] border-white/5 shadow-xl">
+                        <CardHeader className="flex flex-row items-center justify-between border-b border-white/5 pb-4">
                             <div>
-                                <CardTitle>Gestion des Administrateurs</CardTitle>
-                                <CardDescription>
+                                <CardTitle className="text-white">Gestion des Administrateurs</CardTitle>
+                                <CardDescription className="text-gray-400 mt-1">
                                     Afficher et créer de nouveaux accès administrateurs.
                                 </CardDescription>
                             </div>
                             <Dialog open={isAddAdminOpen} onOpenChange={setIsAddAdminOpen}>
                                 <DialogTrigger asChild>
-                                    <Button size="sm">
+                                    <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white">
                                         <Plus className="w-4 h-4 mr-2" />
                                         Ajouter Admin
                                     </Button>
                                 </DialogTrigger>
-                                <DialogContent>
+                                <DialogContent className="bg-[#0c0c0e] border-white/10 text-white">
                                     <DialogHeader>
                                         <DialogTitle>Ajouter un Administrateur</DialogTitle>
-                                        <DialogDescription>
+                                        <DialogDescription className="text-gray-400">
                                             Créez un nouveau compte administrateur.
                                         </DialogDescription>
                                     </DialogHeader>
                                     <form onSubmit={handleCreateAdmin} className="space-y-4">
                                         <div className="space-y-2">
-                                            <Label htmlFor="admin-name">Nom</Label>
+                                            <Label htmlFor="admin-name" className="text-gray-300">Nom</Label>
                                             <Input
                                                 id="admin-name"
                                                 required
                                                 value={newAdmin.name}
                                                 onChange={(e) => setNewAdmin({ ...newAdmin, name: e.target.value })}
+                                                className="bg-black border-white/10 focus-visible:ring-red-600"
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="admin-email">Email</Label>
+                                            <Label htmlFor="admin-email" className="text-gray-300">Email</Label>
                                             <Input
                                                 id="admin-email"
                                                 type="email"
                                                 required
                                                 value={newAdmin.email}
                                                 onChange={(e) => setNewAdmin({ ...newAdmin, email: e.target.value })}
+                                                className="bg-black border-white/10 focus-visible:ring-red-600"
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="admin-password">Mot de passe</Label>
+                                            <Label htmlFor="admin-password" className="text-gray-300">Mot de passe</Label>
                                             <Input
                                                 id="admin-password"
                                                 type="password"
                                                 required
                                                 value={newAdmin.password}
                                                 onChange={(e) => setNewAdmin({ ...newAdmin, password: e.target.value })}
+                                                className="bg-black border-white/10 focus-visible:ring-red-600"
                                             />
                                         </div>
                                         <DialogFooter>
-                                            <Button type="submit" disabled={creatingAdmin}>
+                                            <Button type="submit" disabled={creatingAdmin} className="bg-red-600 hover:bg-red-700 text-white">
                                                 {creatingAdmin ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
                                                 Créer
                                             </Button>
@@ -292,29 +295,29 @@ export default function Settings() {
                                 </DialogContent>
                             </Dialog>
                         </CardHeader>
-                        <CardContent>
-                            <div className="rounded-md border">
+                        <CardContent className="pt-6">
+                            <div className="rounded-xl border border-white/5 bg-black overflow-hidden">
                                 {loadingAdmins ? (
                                     <div className="p-8 flex justify-center items-center">
-                                        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                                        <Loader2 className="w-6 h-6 animate-spin text-red-500" />
                                     </div>
                                 ) : admins.length === 0 ? (
-                                    <div className="p-8 text-center text-muted-foreground">
+                                    <div className="p-8 text-center text-gray-500">
                                         Aucun administrateur trouvé.
                                     </div>
                                 ) : (
                                     admins.map((admin, index) => (
-                                        <div key={admin.id} className={`p-4 flex items-center justify-between ${index !== admins.length - 1 ? 'border-b' : ''}`}>
+                                        <div key={admin.id} className={`p-4 flex items-center justify-between ${index !== admins.length - 1 ? 'border-b border-white/5' : ''} hover:bg-white/[0.02] transition-colors`}>
                                             <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 rounded-full bg-red-600 text-white flex items-center justify-center font-bold">
+                                                <div className="w-10 h-10 rounded-full bg-red-600/20 text-red-500 flex items-center justify-center font-bold border border-red-600/20">
                                                     {admin.name ? admin.name.charAt(0).toUpperCase() : admin.email.charAt(0).toUpperCase()}
                                                 </div>
                                                 <div>
-                                                    <p className="font-medium">{admin.name || "N/A"}</p>
-                                                    <p className="text-sm text-muted-foreground">{admin.email}</p>
+                                                    <p className="font-medium text-white">{admin.name || "N/A"}</p>
+                                                    <p className="text-sm text-gray-400">{admin.email}</p>
                                                 </div>
                                             </div>
-                                            <div className="text-xs font-semibold bg-slate-500/10 text-slate-500 px-2 py-1 rounded-full">
+                                            <div className="text-xs font-semibold bg-red-500/10 text-red-400 px-3 py-1 rounded-full border border-red-500/20">
                                                 Admin
                                             </div>
                                         </div>

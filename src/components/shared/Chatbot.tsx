@@ -344,7 +344,7 @@ export default function Chatbot() {
         } catch (_) {
             addMsg({
                 role: "assistant",
-                text: "Erreur de connexion au serveur. Vérifiez que le backend est lancé.",
+                text: "Désolé, une erreur technique est survenue lors de votre demande de paiement. Veuillez réessayer ultérieurement.",
                 options: [{ label: "Menu Principal", value: "menu" }],
                 action: "reset",
             });

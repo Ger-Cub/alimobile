@@ -15,13 +15,71 @@ import {
     Save,
     Globe,
     Shield,
-    Link as LinkIcon
+    Link as LinkIcon,
+    Plus,
+    Loader2
 } from "lucide-react";
+import { apiFetch } from "@/lib/api";
+import { toast } from "sonner"; // If they use sonner
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+    DialogFooter,
+} from "@/components/ui/dialog";
 
 export default function Settings() {
     const { theme, setTheme } = useTheme();
     const [language, setLanguage] = useState("fr");
     const [paymentEnv, setPaymentEnv] = useState(() => localStorage.getItem("paymentEnv") || "test");
+
+    // Admin states
+    const [admins, setAdmins] = useState<any[]>([]);
+    const [loadingAdmins, setLoadingAdmins] = useState(false);
+    const [isAddAdminOpen, setIsAddAdminOpen] = useState(false);
+    const [newAdmin, setNewAdmin] = useState({ name: "", email: "", password: "" });
+    const [creatingAdmin, setCreatingAdmin] = useState(false);
+
+    React.useEffect(() => {
+        fetchAdmins();
+    }, []);
+
+    const fetchAdmins = async () => {
+        setLoadingAdmins(true);
+        try {
+            const data = await apiFetch("/admin/admins");
+            if (Array.isArray(data)) {
+                setAdmins(data);
+            }
+        } catch (error) {
+            console.error("Failed to load admins:", error);
+        } finally {
+            setLoadingAdmins(false);
+        }
+    };
+
+    const handleCreateAdmin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setCreatingAdmin(true);
+        try {
+            await apiFetch("/admin/admins", {
+                method: "POST",
+                body: JSON.stringify(newAdmin)
+            });
+            setIsAddAdminOpen(false);
+            setNewAdmin({ name: "", email: "", password: "" });
+            fetchAdmins();
+            toast?.success("Administrateur créé avec succès");
+        } catch (error) {
+            console.error("Failed to create admin:", error);
+            toast?.error("Erreur lors de la création de l'administrateur");
+        } finally {
+            setCreatingAdmin(false);
+        }
+    };
 
     const handleEnvChange = (val: string) => {
         setPaymentEnv(val);
@@ -180,40 +238,88 @@ export default function Settings() {
                                     Afficher et créer de nouveaux accès administrateurs.
                                 </CardDescription>
                             </div>
-                            <Button size="sm">
-                                + Ajouter Admin
-                            </Button>
+                            <Dialog open={isAddAdminOpen} onOpenChange={setIsAddAdminOpen}>
+                                <DialogTrigger asChild>
+                                    <Button size="sm">
+                                        <Plus className="w-4 h-4 mr-2" />
+                                        Ajouter Admin
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>Ajouter un Administrateur</DialogTitle>
+                                        <DialogDescription>
+                                            Créez un nouveau compte administrateur.
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <form onSubmit={handleCreateAdmin} className="space-y-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="admin-name">Nom</Label>
+                                            <Input
+                                                id="admin-name"
+                                                required
+                                                value={newAdmin.name}
+                                                onChange={(e) => setNewAdmin({ ...newAdmin, name: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="admin-email">Email</Label>
+                                            <Input
+                                                id="admin-email"
+                                                type="email"
+                                                required
+                                                value={newAdmin.email}
+                                                onChange={(e) => setNewAdmin({ ...newAdmin, email: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="admin-password">Mot de passe</Label>
+                                            <Input
+                                                id="admin-password"
+                                                type="password"
+                                                required
+                                                value={newAdmin.password}
+                                                onChange={(e) => setNewAdmin({ ...newAdmin, password: e.target.value })}
+                                            />
+                                        </div>
+                                        <DialogFooter>
+                                            <Button type="submit" disabled={creatingAdmin}>
+                                                {creatingAdmin ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+                                                Créer
+                                            </Button>
+                                        </DialogFooter>
+                                    </form>
+                                </DialogContent>
+                            </Dialog>
                         </CardHeader>
                         <CardContent>
                             <div className="rounded-md border">
-                                <div className="p-4 flex items-center justify-between border-b">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-full bg-red-600 text-white flex items-center justify-center font-bold">
-                                            G
-                                        </div>
-                                        <div>
-                                            <p className="font-medium">Gérard</p>
-                                            <p className="text-sm text-muted-foreground">admin@alimobile.com</p>
-                                        </div>
+                                {loadingAdmins ? (
+                                    <div className="p-8 flex justify-center items-center">
+                                        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
                                     </div>
-                                    <div className="text-xs font-semibold bg-green-500/10 text-green-500 px-2 py-1 rounded-full">
-                                        Super Admin
+                                ) : admins.length === 0 ? (
+                                    <div className="p-8 text-center text-muted-foreground">
+                                        Aucun administrateur trouvé.
                                     </div>
-                                </div>
-                                <div className="p-4 flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-full bg-slate-600 text-white flex items-center justify-center font-bold">
-                                            J
+                                ) : (
+                                    admins.map((admin, index) => (
+                                        <div key={admin.id} className={`p-4 flex items-center justify-between ${index !== admins.length - 1 ? 'border-b' : ''}`}>
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 rounded-full bg-red-600 text-white flex items-center justify-center font-bold">
+                                                    {admin.name ? admin.name.charAt(0).toUpperCase() : admin.email.charAt(0).toUpperCase()}
+                                                </div>
+                                                <div>
+                                                    <p className="font-medium">{admin.name || "N/A"}</p>
+                                                    <p className="text-sm text-muted-foreground">{admin.email}</p>
+                                                </div>
+                                            </div>
+                                            <div className="text-xs font-semibold bg-slate-500/10 text-slate-500 px-2 py-1 rounded-full">
+                                                Admin
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="font-medium">Jon Doe</p>
-                                            <p className="text-sm text-muted-foreground">jon@alimobile.com</p>
-                                        </div>
-                                    </div>
-                                    <div className="text-xs font-semibold bg-slate-500/10 text-slate-500 px-2 py-1 rounded-full">
-                                        Admin
-                                    </div>
-                                </div>
+                                    ))
+                                )}
                             </div>
                         </CardContent>
                     </Card>

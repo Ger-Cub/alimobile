@@ -391,7 +391,7 @@ export default function Chatbot() {
                     <motion.div
                         key="window"
                         layoutId="chatbot"
-                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                        initial={{ opacity: 0, y: 10, scale: 0.98 }}
                         animate={{ 
                             opacity: 1, 
                             y: 0, 
@@ -400,8 +400,8 @@ export default function Chatbot() {
                             height: (isFullscreen || isMobile) ? (isMobile ? "100%" : "calc(100vh - 48px)") : 580,
                             maxWidth: isFullscreen ? "600px" : (isMobile ? "100%" : "380px"),
                         }}
-                        exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                        transition={{ type: "spring", damping: 30, stiffness: 400 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.98 }}
+                        transition={{ type: "spring", damping: 20, stiffness: 500 }}
                         className={cn(
                             "bg-background/80 backdrop-blur-xl border border-border/50 shadow-2xl overflow-hidden flex flex-col pointer-events-auto",
                             (isFullscreen || isMobile) 

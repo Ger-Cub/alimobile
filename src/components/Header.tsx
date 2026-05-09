@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
-import { Menu, X, ShoppingCart, Phone } from "lucide-react";
+import { Menu, X, ShoppingCart, Phone, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -64,6 +66,13 @@ const Header = () => {
             <Button variant="ghost" size="icon">
               <ShoppingCart className="h-5 w-5" />
             </Button>
+            <Button 
+              variant="outline" 
+              className="border-primary/20 hover:bg-primary/10 text-primary"
+              onClick={() => navigate("/dashboard/login")}
+            >
+              Connexion
+            </Button>
             <Button variant="hero" size="lg">
               <Phone className="h-4 w-4" />
               Nous Contacter
@@ -81,22 +90,41 @@ const Header = () => {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-border/50 animate-fade-in">
-            <nav className="flex flex-col gap-4">
+          <div className="md:hidden fixed inset-0 top-20 z-50 bg-background flex flex-col p-6 animate-in slide-in-from-right duration-300">
+            <nav className="flex flex-col gap-6">
               {navLinks.map((link) => (
                 <a
                   key={link.name}
                   href={link.href}
-                  className="text-muted-foreground hover:text-foreground transition-colors duration-200 py-2"
+                  className="text-lg font-semibold text-foreground border-b border-border pb-4"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {link.name}
                 </a>
               ))}
-              <Button variant="hero" className="mt-4">
-                <Phone className="h-4 w-4" />
-                Nous Contacter
-              </Button>
+              
+              <div className="flex items-center justify-between py-2">
+                <span className="text-muted-foreground font-medium">Changer le thème</span>
+                <ThemeToggle />
+              </div>
+
+              <div className="flex flex-col gap-3 mt-4">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-center gap-2 py-6 text-lg border-primary/20"
+                  onClick={() => {
+                    navigate("/dashboard/login");
+                    setIsMobileMenuOpen(false);
+                  }}
+                >
+                  <UserCircle className="h-5 w-5" />
+                  Espace Admin
+                </Button>
+                <Button variant="hero" className="w-full justify-center py-6 text-lg">
+                  <Phone className="h-5 w-5" />
+                  Nous Contacter
+                </Button>
+              </div>
             </nav>
           </div>
         )}

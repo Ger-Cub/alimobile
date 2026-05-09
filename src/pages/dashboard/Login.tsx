@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useForm } from "react-hook-form";
@@ -12,8 +11,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Lock, Mail, Loader2, ShieldCheck, Eye, EyeOff } from "lucide-react";
+import { Lock, Mail, Loader2, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { useTheme } from "next-themes";
 
 const loginSchema = z.object({
     email: z.string().email("Veuillez entrer une adresse email valide"),
@@ -35,6 +36,15 @@ export default function Login() {
     const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
     const { login } = useAuth();
     const navigate = useNavigate();
+    const { setTheme } = useTheme();
+
+    // Enforce light theme on login page if preferred, but allow toggle
+    useEffect(() => {
+        const currentTheme = localStorage.getItem('theme');
+        if (!currentTheme || currentTheme === 'system') {
+            setTheme('light');
+        }
+    }, [setTheme]);
 
     const form = useForm<LoginFormValues>({
         resolver: zodResolver(loginSchema),
@@ -69,10 +79,7 @@ export default function Login() {
     const onForgotPasswordSubmit = async (data: ForgotPasswordValues) => {
         setForgotPasswordLoading(true);
         try {
-            // Simuler l'appel API pour réinitialiser le mot de passe
-            // À remplacer par un vrai appel API
             await new Promise(resolve => setTimeout(resolve, 1500));
-            
             toast.success("Lien de réinitialisation envoyé à " + data.email);
             forgotPasswordForm.reset();
             setForgotPasswordOpen(false);
@@ -85,20 +92,33 @@ export default function Login() {
     };
 
     return (
-        <div className="min-h-screen w-full flex items-center justify-center bg-slate-950 px-4 relative overflow-hidden">
+        <div className="min-h-screen w-full flex flex-col items-center justify-center bg-background px-4 relative overflow-hidden transition-colors duration-500">
+            {/* Theme Toggle & Back Button */}
+            <div className="absolute top-6 left-6 right-6 flex items-center justify-between z-20">
+                <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="gap-2 text-muted-foreground hover:text-foreground"
+                    onClick={() => navigate("/")}
+                >
+                    <ArrowLeft className="h-4 w-4" />
+                    Retour au site
+                </Button>
+                <ThemeToggle />
+            </div>
+
             {/* Background Orbs and Gradients */}
             <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
-                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-red-600/10 blur-[120px] rounded-full animate-pulse" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/10 blur-[120px] rounded-full animate-pulse [animation-delay:2s]" />
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_center,rgba(15,23,42,0)_0%,rgba(2,6,23,0.8)_100%)] z-0" />
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-red-600/5 blur-[120px] rounded-full animate-pulse" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/5 blur-[120px] rounded-full animate-pulse [animation-delay:2s]" />
             </div>
 
             {/* Login Card */}
             <div className="relative z-10 w-full max-w-md transition-all duration-500 animate-in fade-in zoom-in slide-in-from-bottom-10">
-                <Card className="border-white/5 bg-slate-900/40 backdrop-blur-2xl text-white shadow-2xl shadow-black/50">
+                <Card className="border-border/50 bg-card/50 backdrop-blur-2xl text-card-foreground shadow-2xl shadow-primary/5">
                     <CardHeader className="space-y-2 text-center pt-8">
                         <div className="flex justify-center mb-6">
-                            <div className="w-20 h-20 bg-slate-800/50 rounded-2xl flex items-center justify-center shadow-2xl shadow-red-600/10 group hover:scale-110 transition-transform duration-300 border border-white/5">
+                            <div className="w-20 h-20 bg-primary/5 rounded-2xl flex items-center justify-center shadow-2xl shadow-primary/10 group hover:scale-110 transition-transform duration-300 border border-primary/10">
                                 <img 
                                   src="/logo-alimobile.png" 
                                   alt="AliMobile Logo" 
@@ -106,11 +126,11 @@ export default function Login() {
                                 />
                             </div>
                         </div>
-                        <CardTitle className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+                        <CardTitle className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
                             AliMobile Admin
                         </CardTitle>
-                        <CardDescription className="text-slate-400 text-base">
-                            Ravi de vous revoir ! Connectez-vous à votre espace.
+                        <CardDescription className="text-muted-foreground text-base font-medium">
+                            Accédez à votre tableau de bord sécurisé.
                         </CardDescription>
                     </CardHeader>
 
@@ -122,18 +142,18 @@ export default function Login() {
                                     name="email"
                                     render={({ field }) => (
                                         <FormItem className="space-y-1.5">
-                                            <FormLabel className="text-slate-200 font-medium">Email</FormLabel>
+                                            <FormLabel className="text-foreground font-semibold">Email</FormLabel>
                                             <FormControl>
                                                 <div className="relative group">
-                                                    <Mail className="absolute left-3 top-3 h-4.5 w-4.5 text-slate-500 group-focus-within:text-red-500 transition-colors" />
+                                                    <Mail className="absolute left-3 top-3 h-4.5 w-4.5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                                                     <Input
                                                         placeholder="admin@alimobile.com"
-                                                        className="pl-10 bg-slate-800/50 border-slate-700/50 focus:border-red-500 focus:ring-red-500/20 text-white placeholder:text-slate-600 h-11 transition-all hover:bg-slate-800/80"
+                                                        className="pl-10 bg-background/50 border-border focus:border-primary focus:ring-primary/20 text-foreground placeholder:text-muted-foreground h-11 transition-all hover:bg-background"
                                                         {...field}
                                                     />
                                                 </div>
                                             </FormControl>
-                                            <FormMessage className="text-red-400" />
+                                            <FormMessage />
                                         </FormItem>
                                     )}
                                 />
@@ -144,28 +164,28 @@ export default function Login() {
                                     render={({ field }) => (
                                         <FormItem className="space-y-1.5">
                                             <div className="flex items-center justify-between">
-                                                <FormLabel className="text-slate-200 font-medium">Mot de passe</FormLabel>
+                                                <FormLabel className="text-foreground font-semibold">Mot de passe</FormLabel>
                                                 <button
                                                     type="button"
                                                     onClick={() => setForgotPasswordOpen(true)}
-                                                    className="text-xs text-red-500 hover:text-red-400 font-medium transition-colors"
+                                                    className="text-xs text-primary hover:text-primary/80 font-bold transition-colors"
                                                 >
                                                     Oublié ?
                                                 </button>
                                             </div>
                                             <FormControl>
                                                 <div className="relative group">
-                                                    <Lock className="absolute left-3 top-3 h-4.5 w-4.5 text-slate-500 group-focus-within:text-red-500 transition-colors" />
+                                                    <Lock className="absolute left-3 top-3 h-4.5 w-4.5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                                                     <Input
                                                         type={showPassword ? "text" : "password"}
                                                         placeholder="••••••••"
-                                                        className="pl-10 pr-10 bg-slate-800/50 border-slate-700/50 focus:border-red-500 focus:ring-red-500/20 text-white placeholder:text-slate-600 h-11 transition-all hover:bg-slate-800/80"
+                                                        className="pl-10 pr-10 bg-background/50 border-border focus:border-primary focus:ring-primary/20 text-foreground placeholder:text-muted-foreground h-11 transition-all hover:bg-background"
                                                         {...field}
                                                     />
                                                     <button
                                                         type="button"
                                                         onClick={() => setShowPassword(!showPassword)}
-                                                        className="absolute right-3 top-3 text-slate-500 hover:text-slate-400 transition-colors group-focus-within:text-red-500"
+                                                        className="absolute right-3 top-3 text-muted-foreground hover:text-foreground transition-colors group-focus-within:text-primary"
                                                     >
                                                         {showPassword ? (
                                                             <EyeOff className="h-4.5 w-4.5" />
@@ -175,7 +195,7 @@ export default function Login() {
                                                     </button>
                                                 </div>
                                             </FormControl>
-                                            <FormMessage className="text-red-400" />
+                                            <FormMessage />
                                         </FormItem>
                                     )}
                                 />
@@ -189,9 +209,9 @@ export default function Login() {
                                                 id="rememberMe"
                                                 checked={field.value}
                                                 onCheckedChange={field.onChange}
-                                                className="border-slate-600 data-[state=checked]:bg-red-600 data-[state=checked]:border-red-600"
+                                                className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                                             />
-                                            <Label htmlFor="rememberMe" className="text-sm font-medium text-slate-400 cursor-pointer">
+                                            <Label htmlFor="rememberMe" className="text-sm font-semibold text-muted-foreground cursor-pointer">
                                                 Se souvenir de moi
                                             </Label>
                                         </div>
@@ -202,7 +222,7 @@ export default function Login() {
                             <CardFooter className="pb-8">
                                 <Button
                                     type="submit"
-                                    className="w-full h-11 bg-red-600 hover:bg-red-700 active:scale-[0.98] text-white font-bold text-base transition-all duration-200 shadow-lg shadow-red-600/20 border-none"
+                                    className="w-full h-11 bg-primary hover:bg-primary/90 active:scale-[0.98] text-white font-bold text-base transition-all duration-200 shadow-lg shadow-primary/20 border-none"
                                     disabled={isLoading}
                                 >
                                     {isLoading ? (
@@ -219,17 +239,17 @@ export default function Login() {
                     </Form>
                 </Card>
 
-                <p className="mt-8 text-center text-slate-500 text-sm">
-                    Propulsé par <span className="text-slate-300 font-semibold">AliMobile Dashboard</span>
+                <p className="mt-8 text-center text-muted-foreground text-sm font-medium">
+                    Propulsé par <span className="text-foreground font-bold underline decoration-primary/30">AliMobile Dashboard</span>
                 </p>
             </div>
 
             {/* Forgot Password Dialog */}
             <Dialog open={forgotPasswordOpen} onOpenChange={setForgotPasswordOpen}>
-                <DialogContent className="border-white/10 bg-slate-900 text-white">
+                <DialogContent className="border-border bg-card text-card-foreground">
                     <DialogHeader>
                         <DialogTitle className="text-2xl font-bold">Réinitialiser le mot de passe</DialogTitle>
-                        <DialogDescription className="text-slate-400">
+                        <DialogDescription className="text-muted-foreground font-medium">
                             Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe.
                         </DialogDescription>
                     </DialogHeader>
@@ -241,18 +261,18 @@ export default function Login() {
                                 name="email"
                                 render={({ field }) => (
                                     <FormItem className="space-y-1.5">
-                                        <FormLabel className="text-slate-200 font-medium">Adresse email</FormLabel>
+                                        <FormLabel className="text-foreground font-bold">Adresse email</FormLabel>
                                         <FormControl>
                                             <div className="relative group">
-                                                <Mail className="absolute left-3 top-3 h-4.5 w-4.5 text-slate-500 group-focus-within:text-red-500 transition-colors" />
+                                                <Mail className="absolute left-3 top-3 h-4.5 w-4.5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                                                 <Input
                                                     placeholder="admin@alimobile.com"
-                                                    className="pl-10 bg-slate-800/50 border-slate-700/50 focus:border-red-500 focus:ring-red-500/20 text-white placeholder:text-slate-600 h-11 transition-all"
+                                                    className="pl-10 bg-background/50 border-border focus:border-primary focus:ring-primary/20 text-foreground placeholder:text-muted-foreground h-11 transition-all"
                                                     {...field}
                                                 />
                                             </div>
                                         </FormControl>
-                                        <FormMessage className="text-red-400" />
+                                        <FormMessage />
                                     </FormItem>
                                 )}
                             />
@@ -262,14 +282,14 @@ export default function Login() {
                                     type="button"
                                     variant="outline"
                                     onClick={() => setForgotPasswordOpen(false)}
-                                    className="border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
+                                    className="border-border text-muted-foreground hover:bg-muted hover:text-foreground"
                                     disabled={forgotPasswordLoading}
                                 >
                                     Annuler
                                 </Button>
                                 <Button
                                     type="submit"
-                                    className="bg-red-600 hover:bg-red-700 text-white font-bold transition-all"
+                                    className="bg-primary hover:bg-primary/90 text-white font-bold transition-all shadow-lg shadow-primary/10"
                                     disabled={forgotPasswordLoading}
                                 >
                                     {forgotPasswordLoading ? (

@@ -279,19 +279,19 @@ export default function Overview() {
                     <h1 className="text-3xl font-bold tracking-tight mb-2">Bonjour admin {adminDisplayName} 👋</h1>
                     <p className="text-muted-foreground">Voici ce qui se passe sur AliMobile aujourd'hui.</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3">
                     <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
                         <DialogTrigger asChild>
-                            <Button className="bg-red-600 hover:bg-red-700 text-white gap-2">
+                            <Button className="bg-red-600 hover:bg-red-700 text-white gap-2 px-3 sm:px-4">
                                 <Plus className="w-4 h-4" />
-                                Nouveau Paiement
+                                <span className="hidden sm:inline">Nouveau Paiement</span>
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[425px] border-white/10">
+                        <DialogContent className="sm:max-w-[425px] border-border bg-card">
                             <form onSubmit={handleInitiatePayment}>
                                 <DialogHeader>
                                     <DialogTitle>Initier un Paiement</DialogTitle>
-                                    <DialogDescription className="text-gray-400">
+                                    <DialogDescription className="text-muted-foreground">
                                         Créer une nouvelle transaction (Live ou Test).
                                     </DialogDescription>
                                 </DialogHeader>
@@ -304,7 +304,7 @@ export default function Overview() {
                                                 value={paymentData.customerPhone}
                                                 onChange={(e) => setPaymentData({ ...paymentData, customerPhone: e.target.value })}
                                                 placeholder="243XXXXXXXXX"
-                                                className="bg-white/5 border-white/10"
+                                                className="bg-background border-border"
                                                 required
                                             />
                                         </div>
@@ -316,7 +316,7 @@ export default function Overview() {
                                                 step="0.01"
                                                 value={paymentData.amount}
                                                 onChange={(e) => setPaymentData({ ...paymentData, amount: parseFloat(e.target.value) })}
-                                                className="bg-white/5 border-white/10"
+                                                className="bg-background border-border"
                                                 required
                                             />
                                         </div>
@@ -328,7 +328,7 @@ export default function Overview() {
                                             value={paymentData.customerName}
                                             onChange={(e) => setPaymentData({ ...paymentData, customerName: e.target.value })}
                                             placeholder="Ex: Jean Dupont"
-                                            className="bg-white/5 border-white/10"
+                                            className="bg-background border-border"
                                             required
                                         />
                                     </div>
@@ -339,7 +339,7 @@ export default function Overview() {
                                             value={paymentData.decoderNumber}
                                             onChange={(e) => setPaymentData({ ...paymentData, decoderNumber: e.target.value })}
                                             placeholder="Ex: 1234567890"
-                                            className="bg-white/5 border-white/10"
+                                            className="bg-background border-border"
                                             required
                                         />
                                     </div>
@@ -350,7 +350,7 @@ export default function Overview() {
                                                 id="payPlatform"
                                                 value={paymentData.platform}
                                                 onChange={(e) => setPaymentData({ ...paymentData, platform: e.target.value })}
-                                                className="bg-[#1a1a1a] border border-white/10 text-sm rounded-md px-3 py-2 text-white outline-none focus:border-white/20"
+                                                className="bg-background border border-border text-sm rounded-md px-3 py-2 text-foreground outline-none focus:ring-2 focus:ring-red-600/20"
                                                 required
                                             >
                                                 <option value="WhatsApp">WhatsApp</option>
@@ -364,7 +364,7 @@ export default function Overview() {
                                                 value={paymentData.chatId || ''}
                                                 onChange={(e) => setPaymentData({ ...paymentData, chatId: e.target.value })}
                                                 placeholder="Laisser vide si WhatsApp"
-                                                className="bg-white/5 border-white/10"
+                                                className="bg-background border-border"
                                             />
                                         </div>
                                     </div>
@@ -374,7 +374,7 @@ export default function Overview() {
                                             id="isTest"
                                             checked={paymentData.isTest}
                                             onChange={(e) => setPaymentData({ ...paymentData, isTest: e.target.checked })}
-                                            className="w-4 h-4 rounded border-white/10 bg-white/5 text-red-600 focus:ring-red-600"
+                                            className="w-4 h-4 rounded border-border bg-background text-red-600 focus:ring-red-600"
                                         />
                                         <Label htmlFor="isTest" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                                             Mode TEST (Simuler sans frais)
@@ -397,17 +397,17 @@ export default function Overview() {
 
                     <Dialog open={isTestDialogOpen} onOpenChange={setIsTestDialogOpen}>
                         <DialogTrigger asChild>
-                            <Button variant="outline" className="border-green-600/20 bg-green-600/5 hover:bg-green-600/10 text-green-500 gap-2">
+                            <Button variant="outline" className="border-green-600/20 bg-green-600/5 hover:bg-green-600/10 text-green-500 gap-2 px-3 sm:px-4">
                                 <MessageSquare className="w-4 h-4" />
-                                Test WhatsApp
+                                <span className="hidden sm:inline">Notifier</span>
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[425px] border-white/10">
+                        <DialogContent className="sm:max-w-[425px] border-border bg-card">
                             <form onSubmit={handleTestWhatsApp}>
                                 <DialogHeader>
-                                    <DialogTitle>Tester WhatsApp</DialogTitle>
-                                    <DialogDescription className="text-gray-400">
-                                        Envoyer une notification de test via n8n.
+                                    <DialogTitle>Notifier un client</DialogTitle>
+                                    <DialogDescription className="text-muted-foreground">
+                                        Envoyer une notification via WhatsApp (n8n).
                                     </DialogDescription>
                                 </DialogHeader>
                                 <div className="grid gap-4 py-4">
@@ -418,7 +418,7 @@ export default function Overview() {
                                                 id="txId"
                                                 value={testData.transactionId}
                                                 onChange={(e) => setTestData({ ...testData, transactionId: e.target.value })}
-                                                className="bg-white/5 border-white/10"
+                                                className="bg-background border-border"
                                                 required
                                             />
                                         </div>
@@ -429,7 +429,7 @@ export default function Overview() {
                                                 value={testData.customerPhone}
                                                 onChange={(e) => setTestData({ ...testData, customerPhone: e.target.value })}
                                                 placeholder="243XXXXXXXXX"
-                                                className="bg-white/5 border-white/10"
+                                                className="bg-background border-border"
                                                 required
                                             />
                                         </div>
@@ -440,7 +440,7 @@ export default function Overview() {
                                             id="name"
                                             value={testData.customerName}
                                             onChange={(e) => setTestData({ ...testData, customerName: e.target.value })}
-                                            className="bg-white/5 border-white/10"
+                                            className="bg-background border-border"
                                             required
                                         />
                                     </div>
@@ -451,7 +451,7 @@ export default function Overview() {
                                                 id="platform"
                                                 value={testData.platform}
                                                 onChange={(e) => setTestData({ ...testData, platform: e.target.value })}
-                                                className="bg-white/5 border-white/10"
+                                                className="bg-background border-border"
                                                 required
                                             />
                                         </div>
@@ -461,7 +461,7 @@ export default function Overview() {
                                                 id="decoder"
                                                 value={testData.decoderNumber}
                                                 onChange={(e) => setTestData({ ...testData, decoderNumber: e.target.value })}
-                                                className="bg-white/5 border-white/10"
+                                                className="bg-background border-border"
                                                 required
                                             />
                                         </div>
@@ -472,7 +472,7 @@ export default function Overview() {
                                             id="status"
                                             value={testData.status}
                                             onChange={(e) => setTestData({ ...testData, status: e.target.value })}
-                                            className="bg-white/5 border-white/10"
+                                            className="bg-background border-border"
                                             required
                                         />
                                     </div>
@@ -482,7 +482,7 @@ export default function Overview() {
                                         {testLoading ? "Envoi..." : (
                                             <>
                                                 <Send className="w-4 h-4" />
-                                                Envoyer le test
+                                                Envoyer
                                             </>
                                         )}
                                     </Button>
@@ -490,11 +490,6 @@ export default function Overview() {
                             </form>
                         </DialogContent>
                     </Dialog>
-
-                    <Card className="bg-red-600/10 border-red-600/20 px-4 py-2 flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
-                        <span className="text-xs font-semibold text-red-500 uppercase tracking-wider">Live System</span>
-                    </Card>
                 </div>
             </div>
 

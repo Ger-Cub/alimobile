@@ -149,7 +149,7 @@ export default function Chatbot() {
                 role: "assistant",
                 text: `Choisissez votre bouquet en ${opt.label} 👇`,
                 options: CANAL_BOUQUETS[opt.value] || [],
-                action: "select_country",
+                action: "select_package",
             };
         } else if (action === "select_package") {
             ns.packageName = opt.value;
@@ -363,7 +363,7 @@ export default function Chatbot() {
 
     return (
         <div className={cn(
-            "fixed bottom-0 right-0 z-[100] flex items-end justify-end pointer-events-none transition-all duration-300",
+            "fixed bottom-0 right-0 z-[100] flex items-end justify-end pointer-events-none transition-all duration-200",
             isOpen && isMobile ? "p-0 inset-0" : "p-6"
         )}>
             <AnimatePresence mode="wait">
@@ -401,7 +401,7 @@ export default function Chatbot() {
                             maxWidth: isFullscreen ? "600px" : (isMobile ? "100%" : "380px"),
                         }}
                         exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                        transition={{ type: "spring", damping: 30, stiffness: 400 }}
                         className={cn(
                             "bg-background/80 backdrop-blur-xl border border-border/50 shadow-2xl overflow-hidden flex flex-col pointer-events-auto",
                             (isFullscreen || isMobile) 
@@ -467,7 +467,7 @@ export default function Chatbot() {
                                         key={msg.id}
                                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                                        transition={{ duration: 0.3, delay: i === messages.length - 1 ? 0.1 : 0 }}
+                                        transition={{ duration: 0.2, delay: i === messages.length - 1 ? 0.05 : 0 }}
                                         className={cn("flex", msg.role === "assistant" ? "justify-start" : "justify-end")}
                                     >
                                         <div
@@ -491,7 +491,7 @@ export default function Chatbot() {
                                                 <motion.div 
                                                     initial={{ opacity: 0 }}
                                                     animate={{ opacity: 1 }}
-                                                    transition={{ delay: 0.4 }}
+                                                    transition={{ delay: 0.2 }}
                                                     className="mt-4 flex flex-col gap-2"
                                                 >
                                                     {msg.options.map((opt) => (

@@ -135,24 +135,26 @@ export default function Settings() {
             </div>
 
             <Tabs defaultValue="profile" className="space-y-4">
-                <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:w-3/4 bg-muted p-1 rounded-xl">
-                    <TabsTrigger value="profile" className="space-x-2 rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">
-                        <User className="w-4 h-4" />
-                        <span className="hidden sm:inline">Profil</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="appearance" className="space-x-2 rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">
-                        <Palette className="w-4 h-4" />
-                        <span className="hidden sm:inline">Apparence</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="payments" className="space-x-2 rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">
-                        <CreditCard className="w-4 h-4" />
-                        <span className="hidden sm:inline">Paiements</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="admins" className="space-x-2 rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">
-                        <Users className="w-4 h-4" />
-                        <span className="hidden sm:inline">Admins</span>
-                    </TabsTrigger>
-                </TabsList>
+                <div className="w-full overflow-x-auto pb-1 custom-scrollbar">
+                    <TabsList className="flex w-max min-w-full md:grid md:grid-cols-4 md:w-3/4 bg-muted p-1 rounded-xl">
+                        <TabsTrigger value="profile" className="flex-1 space-x-2 rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm whitespace-nowrap px-4">
+                            <User className="w-4 h-4" />
+                            <span>Profil</span>
+                        </TabsTrigger>
+                        <TabsTrigger value="appearance" className="flex-1 space-x-2 rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm whitespace-nowrap px-4">
+                            <Palette className="w-4 h-4" />
+                            <span>Apparence</span>
+                        </TabsTrigger>
+                        <TabsTrigger value="payments" className="flex-1 space-x-2 rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm whitespace-nowrap px-4">
+                            <CreditCard className="w-4 h-4" />
+                            <span>Paiements</span>
+                        </TabsTrigger>
+                        <TabsTrigger value="admins" className="flex-1 space-x-2 rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm whitespace-nowrap px-4">
+                            <Users className="w-4 h-4" />
+                            <span>Admins</span>
+                        </TabsTrigger>
+                    </TabsList>
+                </div>
 
                 {/* PROFIL Administrateur */}
                 <TabsContent value="profile" className="space-y-4">

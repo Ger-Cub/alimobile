@@ -363,26 +363,25 @@ export default function Chatbot() {
 
     return (
         <div className={cn(
-            "fixed bottom-0 right-0 z-[100] flex items-end justify-end pointer-events-none transition-all duration-200",
+            "fixed bottom-0 right-0 z-[100] flex items-end justify-end pointer-events-none",
             isOpen && isMobile ? "p-0 inset-0" : "p-6"
         )}>
             <AnimatePresence>
                 {!isOpen ? (
                     <motion.button
                         key="launcher"
-                        layoutId="chatbot"
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0, opacity: 0 }}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={() => setIsOpen(true)}
                         className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-2xl pointer-events-auto relative group overflow-hidden"
                     >
                         <div className="absolute inset-0 bg-gradient-to-tr from-red-700 to-red-500 group-hover:scale-110 transition-transform duration-500" />
                         <Bot className="w-8 h-8 text-white relative z-10" />
                         <motion.div 
-                            animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.2, 0.5] }}
+                            animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.2, 0.4] }}
                             transition={{ duration: 2, repeat: Infinity }}
                             className="absolute inset-0 bg-red-400 rounded-full z-0"
                         />
@@ -390,22 +389,16 @@ export default function Chatbot() {
                 ) : (
                     <motion.div
                         key="window"
-                        layoutId="chatbot"
-                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                        initial={{ opacity: 0, y: 15 }}
                         animate={{ 
                             opacity: 1, 
-                            y: 0, 
-                            scale: 1,
+                            y: 0,
                             width: (isFullscreen || isMobile) ? "100%" : 380,
                             height: (isFullscreen || isMobile) ? (isMobile ? "100%" : "calc(100vh - 48px)") : 580,
                             maxWidth: isFullscreen ? "600px" : (isMobile ? "100%" : "380px"),
                         }}
-                        exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                        transition={{ 
-                            layout: { type: "spring", damping: 25, stiffness: 300 },
-                            opacity: { duration: 0.2 }
-                        }}
-                        style={{ originX: 1, originY: 1 }}
+                        exit={{ opacity: 0, y: 15 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
                         className={cn(
                             "bg-background/80 backdrop-blur-xl border border-border/50 shadow-2xl overflow-hidden flex flex-col pointer-events-auto",
                             (isFullscreen || isMobile) 
@@ -413,152 +406,132 @@ export default function Chatbot() {
                                 : "rounded-3xl sm:mb-2 sm:mr-2"
                         )}
                     >
-                        {/* Static Frame to prevent jump */}
-                        <div className="flex flex-col h-full w-full">
-                            {/* Header */}
-                            <div className="relative flex items-center gap-3 p-5 border-b border-border/50 bg-card/50 shrink-0">
-                                <div className="absolute top-0 left-0 w-full h-[4px] bg-gradient-to-r from-red-600 via-red-500 to-red-600" />
-                                <div className="relative">
-                                    <div className="w-10 h-10 rounded-2xl bg-red-600 flex items-center justify-center shadow-lg shadow-red-600/20 rotate-3">
-                                        <Bot className="w-6 h-6 text-white -rotate-3" />
-                                    </div>
-                                    <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-background shadow-sm" />
+                        {/* Header */}
+                        <div className="relative flex items-center gap-3 p-5 border-b border-border/50 bg-card/50 shrink-0">
+                            <div className="absolute top-0 left-0 w-full h-[4px] bg-gradient-to-r from-red-600 via-red-500 to-red-600" />
+                            <div className="relative">
+                                <div className="w-10 h-10 rounded-2xl bg-red-600 flex items-center justify-center shadow-lg shadow-red-600/20 rotate-3">
+                                    <Bot className="w-6 h-6 text-white -rotate-3" />
                                 </div>
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-1.5">
-                                        <p className="font-bold text-base tracking-tight">Ali Mobile</p>
-                                        <Sparkles className="w-3 h-3 text-red-500 animate-pulse" />
-                                    </div>
-                                    <p className="text-[10px] font-semibold text-green-500 uppercase tracking-widest">Assistant Intelligent</p>
-                                </div>
-                                
-                                <div className="flex items-center gap-1">
-                                    <button
-                                        onClick={() => setMessages([INITIAL_MSG])}
-                                        className="p-2 rounded-xl hover:bg-muted/80 transition-all text-muted-foreground"
-                                        title="Réinitialiser"
-                                    >
-                                        <ChevronDown className="w-4 h-4" />
-                                    </button>
-                                    {!isMobile && (
-                                        <button
-                                            onClick={() => setIsFullscreen(!isFullscreen)}
-                                            className="p-2 rounded-xl hover:bg-muted/80 transition-all text-muted-foreground hidden sm:block"
-                                            title={isFullscreen ? "Réduire" : "Plein écran"}
-                                        >
-                                            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-                                        </button>
-                                    )}
-                                    <button
-                                        onClick={() => setIsOpen(false)}
-                                        className="p-2 rounded-xl hover:bg-red-500/10 hover:text-red-500 transition-all text-muted-foreground"
-                                        title="Fermer"
-                                    >
-                                        <X className="w-4 h-4" />
-                                    </button>
-                                </div>
+                                <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-background shadow-sm" />
                             </div>
-
-                            {/* Messages Area */}
-                            <div className="flex-1 overflow-y-auto p-5 space-y-4 scroll-smooth" ref={scrollRef}>
-                                <div className="flex justify-center pb-2">
-                                    <span className="text-[10px] bg-red-500/5 text-red-600 dark:text-red-400 border border-red-500/10 px-4 py-1.5 rounded-full flex items-center gap-2 font-bold uppercase tracking-wider">
-                                        <CheckCircle2 className="w-3 h-3" /> Service Officiel Ali Mobile
-                                    </span>
+                            <div className="flex-1">
+                                <div className="flex items-center gap-1.5">
+                                    <p className="font-bold text-base tracking-tight text-foreground">Ali Mobile</p>
+                                    <Sparkles className="w-3 h-3 text-red-500 animate-pulse" />
                                 </div>
-
-                                <AnimatePresence initial={false}>
-                                    {messages.map((msg, i) => (
-                                        <motion.div
-                                            key={msg.id}
-                                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                                            transition={{ duration: 0.2, delay: i === messages.length - 1 ? 0.05 : 0 }}
-                                            className={cn("flex", msg.role === "assistant" ? "justify-start" : "justify-end")}
-                                        >
-                                            <div
-                                                className={cn(
-                                                    "max-w-[88%] px-4 py-3 text-sm shadow-sm",
-                                                    msg.role === "assistant"
-                                                        ? "bg-card border border-border/50 text-foreground rounded-2xl rounded-tl-none"
-                                                        : "bg-red-600 text-white rounded-2xl rounded-tr-none shadow-red-600/10"
-                                                )}
-                                            >
-                                                {msg.text && (
-                                                    <p className="whitespace-pre-line leading-relaxed font-medium">{msg.text}</p>
-                                                )}
-                                                {msg.isLoading && (
-                                                    <div className="flex items-center gap-3 mt-2 text-muted-foreground text-[11px] font-bold uppercase tracking-tight">
-                                                        <Loader2 className="w-3.5 h-3.5 animate-spin text-red-500" /> Initialisation...
-                                                    </div>
-                                                )}
-                                                
-                                                {msg.role === "assistant" && msg.options && i === messages.length - 1 && (
-                                                    <motion.div 
-                                                        initial={{ opacity: 0 }}
-                                                        animate={{ opacity: 1 }}
-                                                        transition={{ delay: 0.2 }}
-                                                        className="mt-4 flex flex-col gap-2"
-                                                    >
-                                                        {msg.options.map((opt) => (
-                                                            <button
-                                                                key={opt.value}
-                                                                onClick={() => handleOption(msg.action || "select_service", opt)}
-                                                                className="w-full text-left px-4 py-3 text-xs rounded-xl bg-background/50 border border-border hover:border-red-600 hover:bg-red-600/5 hover:text-red-600 transition-all flex justify-between items-center group"
-                                                            >
-                                                                <span className="font-bold">{opt.label}</span>
-                                                                <div className="flex items-center gap-2">
-                                                                    {opt.price !== undefined && (
-                                                                        <span className="text-muted-foreground font-semibold">${opt.price}</span>
-                                                                    )}
-                                                                    <ChevronDown className="w-3 h-3 -rotate-90 opacity-0 group-hover:opacity-100 transition-all" />
-                                                                </div>
-                                                            </button>
-                                                        ))}
-                                                    </motion.div>
-                                                )}
-                                            </div>
-                                        </motion.div>
-                                    ))}
-                                </AnimatePresence>
+                                <p className="text-[10px] font-semibold text-green-500 uppercase tracking-widest">Assistant Intelligent</p>
                             </div>
-
-                            {/* Input Area */}
-                            <AnimatePresence>
-                                {lastMsg?.role === "assistant" && lastMsg.isInput && (
-                                    <motion.div 
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: 20 }}
-                                        className="p-5 border-t border-border/50 bg-card/80 backdrop-blur-md shrink-0"
+                            
+                            <div className="flex items-center gap-1">
+                                <button
+                                    onClick={() => setMessages([INITIAL_MSG])}
+                                    className="p-2 rounded-xl hover:bg-muted/80 transition-all text-muted-foreground"
+                                    title="Réinitialiser"
+                                >
+                                    <ChevronDown className="w-4 h-4" />
+                                </button>
+                                {!isMobile && (
+                                    <button
+                                        onClick={() => setIsFullscreen(!isFullscreen)}
+                                        className="p-2 rounded-xl hover:bg-muted/80 transition-all text-muted-foreground hidden sm:block"
+                                        title={isFullscreen ? "Réduire" : "Plein écran"}
                                     >
-                                        <form
-                                            onSubmit={(e) => {
-                                                e.preventDefault();
-                                                handleInput(lastMsg.action || "", inputValue);
-                                            }}
-                                            className="flex gap-3"
-                                        >
-                                            <input
-                                                type={lastMsg.inputType || "text"}
-                                                value={inputValue}
-                                                onChange={(e) => setInputValue(e.target.value)}
-                                                placeholder={lastMsg.inputPlaceholder || "Écrivez ici..."}
-                                                className="flex-1 bg-background border border-border/50 rounded-2xl px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-600/20 focus:border-red-600/50 text-foreground placeholder:text-muted-foreground transition-all shadow-inner"
-                                                autoFocus
-                                            />
-                                            <button
-                                                type="submit"
-                                                disabled={!inputValue.trim()}
-                                                className="bg-red-600 hover:bg-red-700 text-white rounded-2xl px-5 py-3 transition-all disabled:opacity-50 shadow-lg shadow-red-600/20 active:scale-95"
-                                            >
-                                                <Send className="w-5 h-5" />
-                                            </button>
-                                        </form>
-                                    </motion.div>
+                                        {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                                    </button>
                                 )}
-                            </AnimatePresence>
+                                <button
+                                    onClick={() => setIsOpen(false)}
+                                    className="p-2 rounded-xl hover:bg-red-500/10 hover:text-red-500 transition-all text-muted-foreground"
+                                    title="Fermer"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
                         </div>
+
+                        {/* Messages Area */}
+                        <div className="flex-1 overflow-y-auto p-5 space-y-4 scroll-smooth" ref={scrollRef}>
+                            <div className="flex justify-center pb-2">
+                                <span className="text-[10px] bg-red-500/5 text-red-600 dark:text-red-400 border border-red-500/10 px-4 py-1.5 rounded-full flex items-center gap-2 font-bold uppercase tracking-wider">
+                                    <CheckCircle2 className="w-3 h-3" /> Service Officiel Ali Mobile
+                                </span>
+                            </div>
+
+                            {messages.map((msg, i) => (
+                                <div
+                                    key={msg.id}
+                                    className={cn("flex", msg.role === "assistant" ? "justify-start" : "justify-end")}
+                                >
+                                    <div
+                                        className={cn(
+                                            "max-w-[88%] px-4 py-3 text-sm shadow-sm",
+                                            msg.role === "assistant"
+                                                ? "bg-card border border-border/50 text-foreground rounded-2xl rounded-tl-none"
+                                                : "bg-red-600 text-white rounded-2xl rounded-tr-none shadow-red-600/10"
+                                        )}
+                                    >
+                                        {msg.text && (
+                                            <p className="whitespace-pre-line leading-relaxed font-medium">{msg.text}</p>
+                                        )}
+                                        {msg.isLoading && (
+                                            <div className="flex items-center gap-3 mt-2 text-muted-foreground text-[11px] font-bold uppercase tracking-tight">
+                                                <Loader2 className="w-3.5 h-3.5 animate-spin text-red-500" /> Initialisation...
+                                            </div>
+                                        )}
+                                        
+                                        {msg.role === "assistant" && msg.options && i === messages.length - 1 && (
+                                            <div className="mt-4 flex flex-col gap-2">
+                                                {msg.options.map((opt) => (
+                                                    <button
+                                                        key={opt.value}
+                                                        onClick={() => handleOption(msg.action || "select_service", opt)}
+                                                        className="w-full text-left px-4 py-3 text-xs rounded-xl bg-background/50 border border-border hover:border-red-600 hover:bg-red-600/5 hover:text-red-600 transition-all flex justify-between items-center group"
+                                                    >
+                                                        <span className="font-bold">{opt.label}</span>
+                                                        <div className="flex items-center gap-2">
+                                                            {opt.price !== undefined && (
+                                                                <span className="text-muted-foreground font-semibold">${opt.price}</span>
+                                                            )}
+                                                            <ChevronDown className="w-3 h-3 -rotate-90 opacity-0 group-hover:opacity-100 transition-all" />
+                                                        </div>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Input Area */}
+                        {lastMsg?.role === "assistant" && lastMsg.isInput && (
+                            <div className="p-5 border-t border-border/50 bg-card/80 backdrop-blur-md shrink-0">
+                                <form
+                                    onSubmit={(e) => {
+                                        e.preventDefault();
+                                        handleInput(lastMsg.action || "", inputValue);
+                                    }}
+                                    className="flex gap-3"
+                                >
+                                    <input
+                                        type={lastMsg.inputType || "text"}
+                                        value={inputValue}
+                                        onChange={(e) => setInputValue(e.target.value)}
+                                        placeholder={lastMsg.inputPlaceholder || "Écrivez ici..."}
+                                        className="flex-1 bg-background border border-border/50 rounded-2xl px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-600/20 focus:border-red-600/50 text-foreground placeholder:text-muted-foreground transition-all shadow-inner"
+                                        autoFocus
+                                    />
+                                    <button
+                                        type="submit"
+                                        disabled={!inputValue.trim()}
+                                        className="bg-red-600 hover:bg-red-700 text-white rounded-2xl px-5 py-3 transition-all disabled:opacity-50 shadow-lg shadow-red-600/20 active:scale-95"
+                                    >
+                                        <Send className="w-5 h-5" />
+                                    </button>
+                                </form>
+                            </div>
+                        )}
                     </motion.div>
                 )}
             </AnimatePresence>

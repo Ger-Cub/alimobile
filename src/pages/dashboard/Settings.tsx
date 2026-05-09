@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "next-themes";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,13 +15,14 @@ import {
     Users,
     Save,
     Globe,
-    Shield,
-    Link as LinkIcon,
     Plus,
-    Loader2
+    Loader2,
+    Sun,
+    Moon,
+    Monitor
 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
-import { toast } from "sonner"; // If they use sonner
+import { toast } from "sonner";
 import {
     Dialog,
     DialogContent,
@@ -30,11 +32,37 @@ import {
     DialogTrigger,
     DialogFooter,
 } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 export default function Settings() {
     const { theme, setTheme } = useTheme();
+    const { user, updateProfile } = useAuth();
     const [language, setLanguage] = useState("fr");
     const [paymentEnv, setPaymentEnv] = useState(() => localStorage.getItem("paymentEnv") || "test");
+
+    // Profile states
+    const [profileName, setProfileName] = useState("");
+    const [savingProfile, setSavingProfile] = useState(false);
+
+    useEffect(() => {
+        if (user) {
+            setProfileName(user.name || "");
+        }
+    }, [user]);
+
+    const handleSaveProfile = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSavingProfile(true);
+        try {
+            await updateProfile(profileName);
+            toast.success("Profil mis à jour avec succès");
+        } catch (error) {
+            console.error("Failed to update profile:", error);
+            toast.error("Erreur lors de la mise à jour du profil");
+        } finally {
+            setSavingProfile(false);
+        }
+    };
 
     // Admin states
     const [admins, setAdmins] = useState<any[]>([]);
@@ -43,7 +71,7 @@ export default function Settings() {
     const [newAdmin, setNewAdmin] = useState({ name: "", email: "", password: "" });
     const [creatingAdmin, setCreatingAdmin] = useState(false);
 
-    React.useEffect(() => {
+    useEffect(() => {
         fetchAdmins();
     }, []);
 
@@ -72,10 +100,10 @@ export default function Settings() {
             setIsAddAdminOpen(false);
             setNewAdmin({ name: "", email: "", password: "" });
             fetchAdmins();
-            toast?.success("Administrateur créé avec succès");
+            toast.success("Administrateur créé avec succès");
         } catch (error) {
             console.error("Failed to create admin:", error);
-            toast?.error("Erreur lors de la création de l'administrateur");
+            toast.error("Erreur lors de la création de l'administrateur");
         } finally {
             setCreatingAdmin(false);
         }
@@ -84,109 +112,154 @@ export default function Settings() {
     const handleEnvChange = (val: string) => {
         setPaymentEnv(val);
         localStorage.setItem("paymentEnv", val);
-        toast?.("Environnement défini sur " + val); // Optional if toast is imported, I will just omit if it's not and only do state change
+        toast.success("Environnement défini sur " + val);
     };
 
     const handleSaveLangue = () => {
-        alert("Langue sauvegardée");
+        toast.success("Langue sauvegardée");
     };
 
+    const themeOptions = [
+        { value: "light", label: "Clair", icon: Sun },
+        { value: "dark", label: "Sombre", icon: Moon },
+        { value: "system", label: "Système", icon: Monitor },
+    ];
+
     return (
-        <div className="flex-col md:flex space-y-6 max-w-5xl mx-auto pb-10">
+        <div className="flex-col md:flex space-y-6 max-w-5xl mx-auto pb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div>
-                <h2 className="text-2xl font-bold tracking-tight">Paramètres</h2>
+                <h2 className="text-3xl font-bold tracking-tight text-foreground">Paramètres</h2>
                 <p className="text-muted-foreground">
                     Gérez les paramètres de votre compte, l'apparence et les configurations de l'application.
                 </p>
             </div>
 
-            <Tabs defaultValue="appearance" className="space-y-4">
-                <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:w-3/4">
-                    <TabsTrigger value="profile" className="space-x-2">
+            <Tabs defaultValue="profile" className="space-y-4">
+                <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:w-3/4 bg-muted p-1 rounded-xl">
+                    <TabsTrigger value="profile" className="space-x-2 rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">
                         <User className="w-4 h-4" />
                         <span className="hidden sm:inline">Profil</span>
                     </TabsTrigger>
-                    <TabsTrigger value="appearance" className="space-x-2">
+                    <TabsTrigger value="appearance" className="space-x-2 rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">
                         <Palette className="w-4 h-4" />
-                        <span className="hidden sm:inline">Apparence & Langue</span>
+                        <span className="hidden sm:inline">Apparence</span>
                     </TabsTrigger>
-                    <TabsTrigger value="payments" className="space-x-2">
+                    <TabsTrigger value="payments" className="space-x-2 rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">
                         <CreditCard className="w-4 h-4" />
                         <span className="hidden sm:inline">Paiements</span>
                     </TabsTrigger>
-                    <TabsTrigger value="admins" className="space-x-2">
+                    <TabsTrigger value="admins" className="space-x-2 rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">
                         <Users className="w-4 h-4" />
-                        <span className="hidden sm:inline">Administrateurs</span>
+                        <span className="hidden sm:inline">Admins</span>
                     </TabsTrigger>
                 </TabsList>
 
                 {/* PROFIL Administrateur */}
                 <TabsContent value="profile" className="space-y-4">
-                    <Card className="bg-[#0c0c0e] border-white/5 shadow-xl">
+                    <Card className="bg-card border-border shadow-xl">
                         <CardHeader>
-                            <CardTitle className="text-white">Profil Administrateur</CardTitle>
-                            <CardDescription className="text-gray-400">
+                            <CardTitle className="text-foreground">Profil Administrateur</CardTitle>
+                            <CardDescription className="text-muted-foreground">
                                 Mettez à jour vos informations personnelles.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-4 text-white">
-                            <div className="space-y-2">
-                                <Label htmlFor="name" className="text-gray-300">Nom complet</Label>
-                                <Input id="name" defaultValue="Gérard" className="bg-black border-white/10 focus-visible:ring-red-600" />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="email" className="text-gray-300">Email</Label>
-                                <Input id="email" defaultValue="admin@alimobile.com" className="bg-black border-white/10 focus-visible:ring-red-600" />
-                            </div>
-                            <Button className="bg-red-600 hover:bg-red-700 text-white">
-                                <Save className="w-4 h-4 mr-2" />
-                                Enregistrer
-                            </Button>
+                        <CardContent className="space-y-4">
+                            <form onSubmit={handleSaveProfile} className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="name" className="text-foreground">Nom complet</Label>
+                                    <Input
+                                        id="name"
+                                        value={profileName}
+                                        onChange={(e) => setProfileName(e.target.value)}
+                                        placeholder="Votre nom"
+                                        className="bg-background border-border focus-visible:ring-red-600"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="email" className="text-foreground">
+                                        Email
+                                        <span className="ml-2 text-xs text-muted-foreground font-normal">(non modifiable)</span>
+                                    </Label>
+                                    <Input
+                                        id="email"
+                                        value={user?.email || ""}
+                                        readOnly
+                                        disabled
+                                        className="bg-muted border-border text-muted-foreground cursor-not-allowed opacity-70"
+                                    />
+                                </div>
+                                <Button
+                                    type="submit"
+                                    disabled={savingProfile}
+                                    className="bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/20"
+                                >
+                                    {savingProfile
+                                        ? <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                        : <Save className="w-4 h-4 mr-2" />
+                                    }
+                                    Enregistrer
+                                </Button>
+                            </form>
                         </CardContent>
                     </Card>
                 </TabsContent>
 
                 {/* APPARENCE ET LANGUE */}
                 <TabsContent value="appearance" className="space-y-4">
-                    <Card className="bg-[#0c0c0e] border-white/5 shadow-xl">
+                    <Card className="bg-card border-border shadow-xl">
                         <CardHeader>
-                            <CardTitle className="text-white">Apparence & Langues</CardTitle>
-                            <CardDescription className="text-gray-400">
+                            <CardTitle className="text-foreground">Apparence & Langues</CardTitle>
+                            <CardDescription className="text-muted-foreground">
                                 Personnalisez le thème de l'application et la langue par défaut.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-6 text-white">
-                            <div className="flex items-center justify-between border-b border-white/5 pb-6">
+                        <CardContent className="space-y-6">
+                            {/* Theme Section */}
+                            <div className="space-y-4 border-b border-border pb-6">
                                 <div className="space-y-1">
-                                    <h4 className="text-sm font-medium leading-none text-gray-200">Thème Sombre</h4>
-                                    <p className="text-sm text-gray-400">
-                                        Basculer entre le mode clair et sombre.
+                                    <h4 className="text-sm font-semibold text-foreground">Thème de l'application</h4>
+                                    <p className="text-sm text-muted-foreground">
+                                        Ce thème s'applique à toutes les pages du tableau de bord.
                                     </p>
                                 </div>
-                                <Switch
-                                    checked={theme === "dark"}
-                                    onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
-                                />
+                                <div className="grid grid-cols-3 gap-3">
+                                    {themeOptions.map(({ value, label, icon: Icon }) => (
+                                        <button
+                                            key={value}
+                                            onClick={() => setTheme(value)}
+                                            className={cn(
+                                                "flex flex-col items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200",
+                                                theme === value
+                                                    ? "border-red-600 bg-red-600/5 text-red-500 shadow-inner"
+                                                    : "border-border bg-muted/30 text-muted-foreground hover:border-border/80 hover:bg-muted/50"
+                                            )}
+                                        >
+                                            <Icon className="w-6 h-6" />
+                                            <span className="text-xs font-medium">{label}</span>
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
 
+                            {/* Language Section */}
                             <div className="space-y-4 pt-2">
                                 <div className="space-y-2">
-                                    <Label htmlFor="language" className="text-gray-300">Langue de l'application</Label>
+                                    <Label htmlFor="language" className="text-foreground">Langue de l'application</Label>
                                     <Select value={language} onValueChange={setLanguage}>
-                                        <SelectTrigger id="language" className="bg-black border-white/10 text-white">
+                                        <SelectTrigger id="language" className="bg-background border-border text-foreground focus:ring-red-600">
                                             <div className="flex items-center">
-                                                <Globe className="w-4 h-4 mr-2 text-gray-400" />
+                                                <Globe className="w-4 h-4 mr-2 text-muted-foreground" />
                                                 <SelectValue placeholder="Sélectionnez une langue" />
                                             </div>
                                         </SelectTrigger>
-                                        <SelectContent className="bg-[#0c0c0e] border-white/10 text-white">
+                                        <SelectContent className="bg-popover border-border text-popover-foreground">
                                             <SelectItem value="fr">Français</SelectItem>
                                             <SelectItem value="en">English</SelectItem>
                                             <SelectItem value="es">Español</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <Button onClick={handleSaveLangue} variant="secondary" className="bg-white/10 text-white hover:bg-white/20 border-0">
+                                <Button onClick={handleSaveLangue} variant="secondary" className="bg-muted text-foreground hover:bg-muted/80 border-0">
                                     <Save className="w-4 h-4 mr-2" />
                                     Enregistrer la langue
                                 </Button>
@@ -197,27 +270,27 @@ export default function Settings() {
 
                 {/* PAIEMENTS URL */}
                 <TabsContent value="payments" className="space-y-4">
-                    <Card className="bg-[#0c0c0e] border-white/5 shadow-xl">
+                    <Card className="bg-card border-border shadow-xl">
                         <CardHeader>
-                            <CardTitle className="text-white">Configuration des Paiements (API)</CardTitle>
-                            <CardDescription className="text-gray-400">
-                                Gérez les URLs d'API pour les paiements réels (SerdiPay) et Test. Le chatbot utilise l'environnement actif.
+                            <CardTitle className="text-foreground">Configuration des Paiements</CardTitle>
+                            <CardDescription className="text-muted-foreground">
+                                Gérez les environnements de paiement pour le chatbot et le tableau de bord.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-6 text-white">
+                        <CardContent className="space-y-6">
                             <div className="space-y-4">
-                                <div className="flex items-center justify-between border border-white/5 p-4 rounded-lg bg-black">
+                                <div className="flex items-center justify-between border border-border p-4 rounded-xl bg-muted/20">
                                     <div className="space-y-1">
-                                        <h4 className="text-sm font-medium leading-none text-gray-200">Environnement Actif</h4>
-                                        <p className="text-sm text-gray-400">
-                                            Choisissez quel environnement (Test ou Live) est utilisé par défaut.
+                                        <h4 className="text-sm font-medium leading-none text-foreground">Environnement Actif</h4>
+                                        <p className="text-sm text-muted-foreground">
+                                            Passez du mode Test au mode Live.
                                         </p>
                                     </div>
                                     <Select value={paymentEnv} onValueChange={handleEnvChange}>
-                                        <SelectTrigger className="w-[180px] bg-[#0c0c0e] border-white/10 text-white">
+                                        <SelectTrigger className="w-[180px] bg-background border-border text-foreground focus:ring-red-600">
                                             <SelectValue placeholder="Environnement" />
                                         </SelectTrigger>
-                                        <SelectContent className="bg-[#0c0c0e] border-white/10 text-white">
+                                        <SelectContent className="bg-popover border-border text-popover-foreground">
                                             <SelectItem value="test">Test (Sandbox)</SelectItem>
                                             <SelectItem value="live">Live (Production)</SelectItem>
                                         </SelectContent>
@@ -230,59 +303,59 @@ export default function Settings() {
 
                 {/* ADMINISTRATEURS */}
                 <TabsContent value="admins" className="space-y-4">
-                    <Card className="bg-[#0c0c0e] border-white/5 shadow-xl">
-                        <CardHeader className="flex flex-row items-center justify-between border-b border-white/5 pb-4">
+                    <Card className="bg-card border-border shadow-xl">
+                        <CardHeader className="flex flex-row items-center justify-between border-b border-border pb-4">
                             <div>
-                                <CardTitle className="text-white">Gestion des Administrateurs</CardTitle>
-                                <CardDescription className="text-gray-400 mt-1">
+                                <CardTitle className="text-foreground">Gestion des Administrateurs</CardTitle>
+                                <CardDescription className="text-muted-foreground mt-1">
                                     Afficher et créer de nouveaux accès administrateurs.
                                 </CardDescription>
                             </div>
                             <Dialog open={isAddAdminOpen} onOpenChange={setIsAddAdminOpen}>
                                 <DialogTrigger asChild>
-                                    <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white">
+                                    <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/20">
                                         <Plus className="w-4 h-4 mr-2" />
-                                        Ajouter Admin
+                                        Ajouter
                                     </Button>
                                 </DialogTrigger>
-                                <DialogContent className="bg-[#0c0c0e] border-white/10 text-white">
+                                <DialogContent className="bg-popover border-border text-popover-foreground">
                                     <DialogHeader>
                                         <DialogTitle>Ajouter un Administrateur</DialogTitle>
-                                        <DialogDescription className="text-gray-400">
+                                        <DialogDescription className="text-muted-foreground">
                                             Créez un nouveau compte administrateur.
                                         </DialogDescription>
                                     </DialogHeader>
                                     <form onSubmit={handleCreateAdmin} className="space-y-4">
                                         <div className="space-y-2">
-                                            <Label htmlFor="admin-name" className="text-gray-300">Nom</Label>
+                                            <Label htmlFor="admin-name" className="text-foreground">Nom</Label>
                                             <Input
                                                 id="admin-name"
                                                 required
                                                 value={newAdmin.name}
                                                 onChange={(e) => setNewAdmin({ ...newAdmin, name: e.target.value })}
-                                                className="bg-black border-white/10 focus-visible:ring-red-600"
+                                                className="bg-background border-border focus-visible:ring-red-600"
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="admin-email" className="text-gray-300">Email</Label>
+                                            <Label htmlFor="admin-email" className="text-foreground">Email</Label>
                                             <Input
                                                 id="admin-email"
                                                 type="email"
                                                 required
                                                 value={newAdmin.email}
                                                 onChange={(e) => setNewAdmin({ ...newAdmin, email: e.target.value })}
-                                                className="bg-black border-white/10 focus-visible:ring-red-600"
+                                                className="bg-background border-border focus-visible:ring-red-600"
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="admin-password" className="text-gray-300">Mot de passe</Label>
+                                            <Label htmlFor="admin-password" className="text-foreground">Mot de passe</Label>
                                             <Input
                                                 id="admin-password"
                                                 type="password"
                                                 required
                                                 value={newAdmin.password}
                                                 onChange={(e) => setNewAdmin({ ...newAdmin, password: e.target.value })}
-                                                className="bg-black border-white/10 focus-visible:ring-red-600"
+                                                className="bg-background border-border focus-visible:ring-red-600"
                                             />
                                         </div>
                                         <DialogFooter>
@@ -296,25 +369,25 @@ export default function Settings() {
                             </Dialog>
                         </CardHeader>
                         <CardContent className="pt-6">
-                            <div className="rounded-xl border border-white/5 bg-black overflow-hidden">
+                            <div className="rounded-xl border border-border bg-muted/10 overflow-hidden">
                                 {loadingAdmins ? (
                                     <div className="p-8 flex justify-center items-center">
                                         <Loader2 className="w-6 h-6 animate-spin text-red-500" />
                                     </div>
                                 ) : admins.length === 0 ? (
-                                    <div className="p-8 text-center text-gray-500">
+                                    <div className="p-8 text-center text-muted-foreground italic">
                                         Aucun administrateur trouvé.
                                     </div>
                                 ) : (
                                     admins.map((admin, index) => (
-                                        <div key={admin.id} className={`p-4 flex items-center justify-between ${index !== admins.length - 1 ? 'border-b border-white/5' : ''} hover:bg-white/[0.02] transition-colors`}>
+                                        <div key={admin.id} className={`p-4 flex items-center justify-between ${index !== admins.length - 1 ? 'border-b border-border' : ''} hover:bg-muted/30 transition-colors`}>
                                             <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 rounded-full bg-red-600/20 text-red-500 flex items-center justify-center font-bold border border-red-600/20">
+                                                <div className="w-10 h-10 rounded-full bg-red-600/10 text-red-500 flex items-center justify-center font-bold border border-red-600/20">
                                                     {admin.name ? admin.name.charAt(0).toUpperCase() : admin.email.charAt(0).toUpperCase()}
                                                 </div>
                                                 <div>
-                                                    <p className="font-medium text-white">{admin.name || "N/A"}</p>
-                                                    <p className="text-sm text-gray-400">{admin.email}</p>
+                                                    <p className="font-medium text-foreground">{admin.name || "N/A"}</p>
+                                                    <p className="text-sm text-muted-foreground">{admin.email}</p>
                                                 </div>
                                             </div>
                                             <div className="text-xs font-semibold bg-red-500/10 text-red-400 px-3 py-1 rounded-full border border-red-500/20">

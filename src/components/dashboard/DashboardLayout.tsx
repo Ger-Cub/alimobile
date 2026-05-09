@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { useTheme } from 'next-themes';
 import {
     LayoutDashboard,
     Receipt,
@@ -11,14 +12,18 @@ import {
     X,
     User,
     ChevronRight,
-    FileText
+    FileText,
+    Sun,
+    Moon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function DashboardLayout() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const { user, logout } = useAuth();
+    const { theme, setTheme } = useTheme();
     const navigate = useNavigate();
 
     const handleLogout = async () => {
@@ -34,7 +39,7 @@ export default function DashboardLayout() {
     ];
 
     return (
-        <div className="min-h-screen bg-[#09090b] text-white flex">
+        <div className="min-h-screen bg-background text-foreground flex transition-colors duration-300">
             {/* Mobile Sidebar Overlay */}
             {isSidebarOpen && (
                 <div
@@ -45,15 +50,17 @@ export default function DashboardLayout() {
 
             {/* Sidebar */}
             <aside className={cn(
-                "fixed inset-y-0 left-0 z-50 w-64 bg-[#0c0c0e] border-r border-white/5 transition-transform duration-300 transform lg:relative lg:translate-x-0",
+                "fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border transition-all duration-300 transform lg:relative lg:translate-x-0",
                 isSidebarOpen ? "translate-x-0" : "-translate-x-full"
             )}>
                 <div className="p-6">
                     <div className="flex items-center gap-3 mb-10">
-                        <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center shadow-lg shadow-red-600/20">
-                            <span className="font-bold text-lg">A</span>
-                        </div>
-                        <span className="font-bold text-xl tracking-tight">AliMobile</span>
+                        <img 
+                          src="/logo-alimobile.png" 
+                          alt="AliMobile Logo" 
+                          className="w-10 h-10 object-contain"
+                        />
+                        <span className="font-bold text-xl tracking-tight text-foreground">AliMobile</span>
                     </div>
 
                     <nav className="space-y-1">
@@ -66,7 +73,7 @@ export default function DashboardLayout() {
                                     "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors group",
                                     isActive
                                         ? "bg-red-600/10 text-red-500"
-                                        : "text-gray-400 hover:text-white hover:bg-white/5"
+                                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
                                 )}
                                 onClick={() => setIsSidebarOpen(false)}
                             >
@@ -78,19 +85,21 @@ export default function DashboardLayout() {
                     </nav>
                 </div>
 
-                <div className="absolute bottom-0 w-full p-6 border-t border-white/5">
+                <div className="absolute bottom-0 w-full p-6 border-t border-border">
                     <div className="flex items-center gap-3 mb-6 px-2">
-                        <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
-                            <User className="w-5 h-5 text-gray-400" />
+                        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center border border-border">
+                            <User className="w-5 h-5 text-muted-foreground" />
                         </div>
                         <div className="overflow-hidden">
-                            <p className="text-sm font-medium truncate">{user?.email}</p>
-                            <p className="text-xs text-gray-400 truncate text-start">Administrateur</p>
+                            <p className="text-sm font-medium truncate text-foreground">
+                                {user?.name || user?.email}
+                            </p>
+                            <p className="text-xs text-muted-foreground truncate text-start">Administrateur</p>
                         </div>
                     </div>
                     <Button
                         variant="ghost"
-                        className="w-full justify-start text-gray-400 hover:text-red-500 hover:bg-red-500/10"
+                        className="w-full justify-start text-muted-foreground hover:text-red-500 hover:bg-red-500/10"
                         onClick={handleLogout}
                     >
                         <LogOut className="w-5 h-5 mr-3" />
@@ -101,20 +110,20 @@ export default function DashboardLayout() {
 
             {/* Main Content */}
             <div className="flex-1 flex flex-col min-h-screen">
-                <header className="h-16 border-b border-white/5 bg-[#09090b]/50 backdrop-blur-md flex items-center justify-between px-6 sticky top-0 z-30">
+                <header className="h-16 border-b border-border bg-background/80 backdrop-blur-md flex items-center justify-between px-6 sticky top-0 z-30 transition-colors duration-300">
                     <button
-                        className="p-2 lg:hidden text-gray-400"
+                        className="p-2 lg:hidden text-muted-foreground hover:text-foreground"
                         onClick={() => setIsSidebarOpen(true)}
                     >
                         <Menu className="w-6 h-6" />
                     </button>
 
                     <div className="flex items-center gap-4 ml-auto">
-                        {/* Header content like search or notifications could go here */}
+                        <ThemeToggle />
                     </div>
                 </header>
 
-                <main className="flex-1 p-6 lg:p-10">
+                <main className="flex-1 p-6 lg:p-10 bg-background transition-colors duration-300">
                     <Outlet />
                 </main>
             </div>

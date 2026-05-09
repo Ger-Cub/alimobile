@@ -1,6 +1,21 @@
-# Welcome to your Lovable project
+# AliMobile - Accessoires Canal+, Starlink & Électronique
 
-## Project info
+Bienvenue sur le projet AliMobile, votre destination premium pour les accessoires Canal+, équipements Starlink et appareils électroniques à Goma et Bukavu.
+
+## Technologies utilisées
+
+- **Frontend**: React, TypeScript, Tailwind CSS, Lucide React, Radix UI
+- **Build Tool**: Vite
+- **UI Components**: shadcn/ui
+- **SEO**: React Helmet Async
+
+## Déploiement
+
+Le site est conçu pour être déployé sur Vercel ou toute autre plateforme statique.
+
+---
+
+## Lovable project info
 
 **URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
 

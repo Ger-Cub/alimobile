@@ -35,9 +35,11 @@ const Header = () => {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <a href="#home" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-xl">A</span>
-            </div>
+            <img 
+              src="/logo-alimobile.png" 
+              alt="AliMobile Logo" 
+              className="w-12 h-12 object-contain"
+            />
             <span className="text-xl font-bold text-foreground">
               Ali<span className="gradient-text">Mobile</span>
             </span>

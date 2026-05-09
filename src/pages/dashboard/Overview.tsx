@@ -246,16 +246,18 @@ export default function Overview() {
         },
     ];
 
+    const adminDisplayName = user?.name || user?.email?.split('@')[0] || "Admin";
+
     if (isLoading) {
         return (
             <div className="space-y-8 animate-in fade-in duration-500">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight mb-2">Bonjour, {user?.email?.split('@')[0] || "Admin"} 👋</h1>
-                    <p className="text-gray-400">Voici ce qui se passe sur AliMobile aujourd'hui.</p>
+                    <h1 className="text-3xl font-bold tracking-tight mb-2">Bonjour admin {adminDisplayName} 👋</h1>
+                    <p className="text-muted-foreground">Voici ce qui se passe sur AliMobile aujourd'hui.</p>
                 </div>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                     {[1, 2, 3, 4].map((i) => (
-                        <Card key={i} className="border-white/5 bg-white/5">
+                        <Card key={i} className="bg-card border-border shadow-md">
                             <CardHeader className="pb-2">
                                 <Skeleton className="h-4 w-24" />
                             </CardHeader>
@@ -274,8 +276,8 @@ export default function Overview() {
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight mb-2">Bonjour, {user?.email?.split('@')[0] || "Admin"} 👋</h1>
-                    <p className="text-gray-400">Voici ce qui se passe sur AliMobile aujourd'hui.</p>
+                    <h1 className="text-3xl font-bold tracking-tight mb-2">Bonjour admin {adminDisplayName} 👋</h1>
+                    <p className="text-muted-foreground">Voici ce qui se passe sur AliMobile aujourd'hui.</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
@@ -498,16 +500,16 @@ export default function Overview() {
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {cards.map((card) => (
-                    <Card key={card.title} className="border-white/5 bg-white/5 hover:bg-white/10 transition-colors group">
+                    <Card key={card.title} className="bg-card border-border shadow-md hover:shadow-lg transition-all duration-300 group">
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium text-gray-400">{card.title}</CardTitle>
+                            <CardTitle className="text-sm font-medium text-muted-foreground">{card.title}</CardTitle>
                             <div className={cn("p-2 rounded-lg", card.bg)}>
                                 <card.icon className={cn("w-4 h-4", card.color)} />
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{card.value}</div>
-                            <p className="text-xs text-gray-500 mt-1 flex items-center">
+                            <div className="text-2xl font-bold text-foreground">{card.value}</div>
+                            <p className="text-xs text-muted-foreground mt-1 flex items-center">
                                 <TrendingUp className="w-3 h-3 mr-1 text-green-500" />
                                 {card.description}
                             </p>
@@ -517,11 +519,11 @@ export default function Overview() {
             </div>
 
             <div className="grid gap-4 md:grid-cols-7">
-                <Card className="md:col-span-4 border-white/5 bg-white/5">
+                <Card className="md:col-span-4 bg-card border-border shadow-xl">
                     <CardHeader>
-                        <CardTitle>Performance Récente</CardTitle>
+                        <CardTitle className="text-foreground">Performance Récente</CardTitle>
                     </CardHeader>
-                    <CardContent className="h-[300px] border-t border-white/5 pt-6">
+                    <CardContent className="h-[300px] border-t border-border pt-6">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={computedChartData}>
                                 <defs>
@@ -567,22 +569,22 @@ export default function Overview() {
                     </CardContent>
                 </Card>
 
-                <Card className="md:col-span-3 border-white/5 bg-white/5">
+                <Card className="md:col-span-3 bg-card border-border shadow-xl">
                     <CardHeader>
-                        <CardTitle>Activités Récentes</CardTitle>
+                        <CardTitle className="text-foreground">Activités Récentes</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                        <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">Dernières Transactions</p>
+                        <p className="text-xs text-muted-foreground uppercase tracking-widest font-bold">Dernières Transactions</p>
                         <div className="space-y-4">
                             {transactionsError ? (
                                 <p className="text-sm text-red-400 italic">Erreur: {(transactionsError as Error).message}</p>
                             ) : !recentTransactions || recentTransactions.length === 0 ? (
-                                <p className="text-sm text-gray-500 italic">Aucune activité récente.</p>
+                                <p className="text-sm text-muted-foreground italic">Aucune activité récente.</p>
                             ) : (
                                 recentTransactions.slice(0, 5).map((tx: any) => (
-                                    <div key={tx.id || Math.random()} className="flex gap-4 items-start">
+                                    <div key={tx.id || Math.random()} className="flex gap-4 items-start p-2 rounded-lg hover:bg-muted/50 transition-colors">
                                         <div className={cn(
-                                            "w-8 h-8 rounded-full flex items-center justify-center shrink-0",
+                                            "w-8 h-8 rounded-full flex items-center justify-center shrink-0 border border-border",
                                             tx.status === 'PAID' || tx.status === 'ACTIVATED' ? "bg-green-500/10" : "bg-orange-500/10"
                                         )}>
                                             <ArrowUpRight className={cn(
@@ -591,12 +593,12 @@ export default function Overview() {
                                             )} />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-sm truncate font-medium">{tx.customerName || tx.name || tx.customerPhone || tx.phone || 'Inconnu'}</p>
-                                            <p className="text-xs text-gray-500">
+                                            <p className="text-sm truncate font-medium text-foreground">{tx.customerName || tx.name || tx.customerPhone || tx.phone || 'Inconnu'}</p>
+                                            <p className="text-xs text-muted-foreground">
                                                 {tx.status === 'ACTIVATED' ? 'Abonnement activé' : tx.status === 'PAID' ? 'Paiement reçu' : 'En attente'}
                                             </p>
                                         </div>
-                                        <div className="font-mono text-sm font-semibold">${(tx.amount || 0).toFixed(2)}</div>
+                                        <div className="font-mono text-sm font-semibold text-foreground">${(tx.amount || 0).toFixed(2)}</div>
                                     </div>
                                 ))
                             )}

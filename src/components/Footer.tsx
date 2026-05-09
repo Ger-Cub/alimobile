@@ -37,9 +37,11 @@ const Footer = () => {
           {/* Brand Section */}
           <div className="lg:col-span-2">
             <a href="#home" className="flex items-center gap-2 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-xl">A</span>
-              </div>
+              <img 
+                src="/logo-alimobile.png" 
+                alt="AliMobile Logo" 
+                className="w-12 h-12 object-contain"
+              />
               <span className="text-xl font-bold text-foreground">
                 Ali<span className="gradient-text">Mobile</span>
               </span>

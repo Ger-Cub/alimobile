@@ -98,8 +98,12 @@ export default function Login() {
                 <Card className="border-white/5 bg-slate-900/40 backdrop-blur-2xl text-white shadow-2xl shadow-black/50">
                     <CardHeader className="space-y-2 text-center pt-8">
                         <div className="flex justify-center mb-6">
-                            <div className="w-16 h-16 bg-gradient-to-br from-red-600 to-red-800 rounded-2xl flex items-center justify-center shadow-2xl shadow-red-600/20 group hover:scale-110 transition-transform duration-300">
-                                <ShieldCheck className="w-8 h-8 text-white group-hover:rotate-6 transition-transform" />
+                            <div className="w-20 h-20 bg-slate-800/50 rounded-2xl flex items-center justify-center shadow-2xl shadow-red-600/10 group hover:scale-110 transition-transform duration-300 border border-white/5">
+                                <img 
+                                  src="/logo-alimobile.png" 
+                                  alt="AliMobile Logo" 
+                                  className="w-14 h-14 object-contain group-hover:rotate-6 transition-transform" 
+                                />
                             </div>
                         </div>
                         <CardTitle className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">

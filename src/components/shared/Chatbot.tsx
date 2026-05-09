@@ -366,7 +366,7 @@ export default function Chatbot() {
             "fixed bottom-0 right-0 z-[100] flex items-end justify-end pointer-events-none transition-all duration-200",
             isOpen && isMobile ? "p-0 inset-0" : "p-6"
         )}>
-            <AnimatePresence mode="wait">
+            <AnimatePresence>
                 {!isOpen ? (
                     <motion.button
                         key="launcher"

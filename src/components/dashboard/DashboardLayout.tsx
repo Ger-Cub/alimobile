@@ -50,11 +50,12 @@ export default function DashboardLayout() {
 
             {/* Sidebar */}
             <aside className={cn(
-                "fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border transition-all duration-300 transform lg:relative lg:translate-x-0",
+                "fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border transition-all duration-300 transform lg:relative lg:translate-x-0 flex flex-col h-screen",
                 isSidebarOpen ? "translate-x-0" : "-translate-x-full"
             )}>
-                <div className="p-6">
-                    <div className="flex items-center gap-3 mb-10">
+                {/* Brand Header - Fixed at top */}
+                <div className="p-6 shrink-0">
+                    <div className="flex items-center gap-3 mb-4">
                         <img 
                           src="/logo-alimobile.png" 
                           alt="AliMobile Logo" 
@@ -62,39 +63,41 @@ export default function DashboardLayout() {
                         />
                         <span className="font-bold text-xl tracking-tight text-foreground">AliMobile</span>
                     </div>
-
-                    <nav className="space-y-1">
-                        {navItems.map((item) => (
-                            <NavLink
-                                key={item.href}
-                                to={item.href}
-                                end={item.href === '/dashboard'}
-                                className={({ isActive }) => cn(
-                                    "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors group",
-                                    isActive
-                                        ? "bg-red-600/10 text-red-500"
-                                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                                )}
-                                onClick={() => setIsSidebarOpen(false)}
-                            >
-                                <item.icon className="w-5 h-5" />
-                                {item.title}
-                                <ChevronRight className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </NavLink>
-                        ))}
-                    </nav>
                 </div>
 
-                <div className="absolute bottom-0 w-full p-6 border-t border-border">
+                {/* Navigation - Independent Scroll Area */}
+                <nav className="flex-1 overflow-y-auto px-6 py-2 space-y-1 custom-scrollbar">
+                    {navItems.map((item) => (
+                        <NavLink
+                            key={item.href}
+                            to={item.href}
+                            end={item.href === '/dashboard'}
+                            className={({ isActive }) => cn(
+                                "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors group",
+                                isActive
+                                    ? "bg-red-600/10 text-red-500"
+                                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                            )}
+                            onClick={() => setIsSidebarOpen(false)}
+                        >
+                            <item.icon className="w-5 h-5" />
+                            {item.title}
+                            <ChevronRight className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </NavLink>
+                    ))}
+                </nav>
+
+                {/* Footer / User Profile - Fixed at bottom */}
+                <div className="p-6 border-t border-border shrink-0 bg-card">
                     <div className="flex items-center gap-3 mb-6 px-2">
                         <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center border border-border">
                             <User className="w-5 h-5 text-muted-foreground" />
                         </div>
-                        <div className="overflow-hidden">
+                        <div className="overflow-hidden text-start">
                             <p className="text-sm font-medium truncate text-foreground">
                                 {user?.name || user?.email}
                             </p>
-                            <p className="text-xs text-muted-foreground truncate text-start">Administrateur</p>
+                            <p className="text-xs text-muted-foreground truncate">Administrateur</p>
                         </div>
                     </div>
                     <Button

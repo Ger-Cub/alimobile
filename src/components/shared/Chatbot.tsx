@@ -62,6 +62,7 @@ const INITIAL_MSG: Message = {
 export default function Chatbot() {
     const [isOpen, setIsOpen] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
     const [messages, setMessages] = useState<Message[]>([INITIAL_MSG]);
     const [inputValue, setInputValue] = useState("");
     const [state, setState] = useState({
@@ -75,6 +76,15 @@ export default function Chatbot() {
     });
 
     const scrollRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 1024);
+        };
+        checkMobile();
+        window.addEventListener("resize", checkMobile);
+        return () => window.removeEventListener("resize", checkMobile);
+    }, []);
 
     useEffect(() => {
         if (scrollRef.current) {
@@ -139,7 +149,7 @@ export default function Chatbot() {
                 role: "assistant",
                 text: `Choisissez votre bouquet en ${opt.label} 👇`,
                 options: CANAL_BOUQUETS[opt.value] || [],
-                action: "select_package",
+                action: "select_country",
             };
         } else if (action === "select_package") {
             ns.packageName = opt.value;
@@ -352,7 +362,10 @@ export default function Chatbot() {
     const lastMsg = messages[messages.length - 1];
 
     return (
-        <div className="fixed bottom-0 right-0 z-[100] flex items-end justify-end p-6 pointer-events-none">
+        <div className={cn(
+            "fixed bottom-0 right-0 z-[100] flex items-end justify-end pointer-events-none transition-all duration-300",
+            isOpen && isMobile ? "p-0 inset-0" : "p-6"
+        )}>
             <AnimatePresence mode="wait">
                 {!isOpen ? (
                     <motion.button
@@ -383,21 +396,21 @@ export default function Chatbot() {
                             opacity: 1, 
                             y: 0, 
                             scale: 1,
-                            width: isFullscreen ? "100%" : 380,
-                            height: isFullscreen ? "calc(100vh - 48px)" : 580,
-                            maxWidth: isFullscreen ? "600px" : "100%",
+                            width: (isFullscreen || isMobile) ? "100%" : 380,
+                            height: (isFullscreen || isMobile) ? (isMobile ? "100%" : "calc(100vh - 48px)") : 580,
+                            maxWidth: isFullscreen ? "600px" : (isMobile ? "100%" : "380px"),
                         }}
                         exit={{ opacity: 0, y: 20, scale: 0.95 }}
                         transition={{ type: "spring", damping: 25, stiffness: 300 }}
                         className={cn(
                             "bg-background/80 backdrop-blur-xl border border-border/50 shadow-2xl overflow-hidden flex flex-col pointer-events-auto",
-                            isFullscreen 
-                                ? "rounded-3xl mx-auto mb-0" 
+                            (isFullscreen || isMobile) 
+                                ? "rounded-none sm:rounded-3xl mx-auto mb-0" 
                                 : "rounded-3xl sm:mb-2 sm:mr-2"
                         )}
                     >
                         {/* Header */}
-                        <div className="relative flex items-center gap-3 p-5 border-b border-border/50 bg-card/50">
+                        <div className="relative flex items-center gap-3 p-5 border-b border-border/50 bg-card/50 shrink-0">
                             <div className="absolute top-0 left-0 w-full h-[4px] bg-gradient-to-r from-red-600 via-red-500 to-red-600" />
                             <div className="relative">
                                 <div className="w-10 h-10 rounded-2xl bg-red-600 flex items-center justify-center shadow-lg shadow-red-600/20 rotate-3">
@@ -421,13 +434,15 @@ export default function Chatbot() {
                                 >
                                     <ChevronDown className="w-4 h-4" />
                                 </button>
-                                <button
-                                    onClick={() => setIsFullscreen(!isFullscreen)}
-                                    className="p-2 rounded-xl hover:bg-muted/80 transition-all text-muted-foreground hidden sm:block"
-                                    title={isFullscreen ? "Réduire" : "Plein écran"}
-                                >
-                                    {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-                                </button>
+                                {!isMobile && (
+                                    <button
+                                        onClick={() => setIsFullscreen(!isFullscreen)}
+                                        className="p-2 rounded-xl hover:bg-muted/80 transition-all text-muted-foreground hidden sm:block"
+                                        title={isFullscreen ? "Réduire" : "Plein écran"}
+                                    >
+                                        {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                                    </button>
+                                )}
                                 <button
                                     onClick={() => setIsOpen(false)}
                                     className="p-2 rounded-xl hover:bg-red-500/10 hover:text-red-500 transition-all text-muted-foreground"
@@ -509,7 +524,7 @@ export default function Chatbot() {
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: 20 }}
-                                    className="p-5 border-t border-border/50 bg-card/80 backdrop-blur-md"
+                                    className="p-5 border-t border-border/50 bg-card/80 backdrop-blur-md shrink-0"
                                 >
                                     <form
                                         onSubmit={(e) => {
